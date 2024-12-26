@@ -51,4 +51,18 @@
     width: 100%;
     max-width: 100%;
   }
+  
+  body {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  flex-direction: column; /* Added line */
+  min-width: 320px;
+  min-height: 100vh;
 }
