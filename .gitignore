@@ -38,8 +38,8 @@ bower_components
 # Compiled binary addons (https://nodejs.org/api/addons.html)
 build/Release
 
-# Dependency directories
-node_modules/
+# Dependency directories (ignore all node_modules folders recursively)
+**/node_modules/
 jspm_packages/
 
 # Snowpack dependency directory (https://snowpack.dev/)
@@ -129,5 +129,5 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-# giant lock file (polutes commit diffs)
-pnpm-lock.yaml
+# giant lock file (pollutes commit diffs) - ignore all pnpm-lock.yaml files recursively
+**/pnpm-lock.yaml
