@@ -1,5 +1,5 @@
 {
-  "name": "ai-tools-guid",
+  "name": "ai-tools",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -14,7 +14,8 @@
     "react-dom": "^18.3.1",
     "@mui/material": "^5.0.0",
     "@emotion/react": "^11.0.0",
-    "@emotion/styled": "^11.0.0"
+    "@emotion/styled": "^11.0.0",
+    "@mui/icons-material": "^5.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
