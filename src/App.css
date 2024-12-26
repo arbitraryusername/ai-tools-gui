@@ -40,3 +40,15 @@
 .read-the-docs {
   color: #888;
 }
+
+@media (max-width: 600px) {
+  label {
+    display: block;
+    margin-bottom: 1rem;
+  }
+
+  input, textarea, button {
+    width: 100%;
+    max-width: 100%;
+  }
+}
