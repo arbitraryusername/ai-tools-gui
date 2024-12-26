@@ -1,5 +1,5 @@
 #root {
-  max-width: 1280px;
+  max-width: 1480px; /* Increased max-width by 200px */
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
@@ -82,4 +82,8 @@ label {
   flex-direction: column;
   align-items: center; /* Center label and input */
   margin-bottom: 1rem;
+}
+
+textarea {
+  height: 150px; /* Made text box several lines taller */
 }
