@@ -84,6 +84,10 @@ label {
   margin-bottom: 1rem;
 }
 
+input, textarea, button {
+  max-width: 350px; /* Updated max-width for inputs and button */
+}
+
 textarea {
   height: 150px; /* Made text box several lines taller */
 }
