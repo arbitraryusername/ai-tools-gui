@@ -14,6 +14,6 @@
   },
   "scripts": {
     "build": "concurrently --kill-others-on-fail \"pnpm --filter server build\" \"pnpm --filter client build\"",
-    "dev": "concurrently --kill-others-on-fail \"pnpm --filter client dev\" \"pnpm --filter server dev\""
+    "dev": "concurrently --kill-others-on-fail \"pnpm --filter client dev\" \"pnpm --filter server dev:debug\""
   }
 }

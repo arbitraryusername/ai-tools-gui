@@ -6,9 +6,12 @@
   "scripts": {
     "start": "node dist/server.js",
     "dev": "ts-node-dev --respawn src/server.ts",
+    "dev:debug": "ts-node-dev --respawn --inspect=9229 -- src/server.ts",
     "build": "tsc"
   },
   "dependencies": {
+    "@types/cors": "^2.8.17",
+    "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.21.2"
   },

@@ -13,7 +13,7 @@ function App() {
   const [prompt, setPrompt] = useState('');
 
   const handleSubmit = async () => {
-    const response = await fetch('/api/processPrompt', {
+    const response = await fetch('http://localhost:3001/api/processPrompt', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

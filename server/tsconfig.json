@@ -1,11 +1,12 @@
 {
-  "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "module": "commonjs", // Node.js requires CommonJS modules
-    "target": "esnext",   // For modern JavaScript features in Node.js
-    "outDir": "./dist",    // Output directory for compiled server files
+    "module": "commonjs",
+    "target": "esnext",
+    "outDir": "./dist",
     "rootDir": "./src",
-    "strict": true
+    "strict": true,
+    "esModuleInterop": true,
+    "sourceMap": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"]
