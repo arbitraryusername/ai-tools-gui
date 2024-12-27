@@ -12,8 +12,17 @@ function App() {
   const [localDirectory, setLocalDirectory] = useState('');
   const [prompt, setPrompt] = useState('');
 
-  const handleSubmit = () => {
-    // Handle submit logic here
+  const handleSubmit = async () => {
+    const response = await fetch('/api/processPrompt', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ prompt }),
+    });
+
+    const data = await response.json();
+    console.log(data);
   };
 
   return (
