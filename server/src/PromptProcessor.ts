@@ -1,0 +1,152 @@
+import { getFilePathDelimiter, getSourceCodeAbsolutePath } from './AppConfig';
+import { combineFilesIntoString } from './SourceCodeHelper';
+import { generateCode } from './OpenAIAPI';
+import { applyChangesToSourceCode } from './SourceCodeHelper';
+import { executeCommand } from './ShellUtils';
+import { createGitCommit } from './GitUtils';
+
+// Types
+interface Commit {
+  hash: string;
+  message: string;
+  timestamp: Date;
+}
+
+interface ProcessPromptOptions {
+  maxErrorResolutionAttempts?: number;
+}
+
+// Constants
+const BUILD_COMMAND = "pnpm run build" as const;
+const INSTALL_COMMAND = "pnpm install" as const;
+
+class PromptProcessor {
+  private readonly delimiter: string;
+  private readonly sourceCodePath: string;
+
+  constructor() {
+    this.delimiter = getFilePathDelimiter();
+    this.sourceCodePath = getSourceCodeAbsolutePath();
+  }
+
+  async processPrompt(
+    userRawPrompt: string, 
+    options: ProcessPromptOptions = {}
+  ): Promise<Commit[]> {
+    const commits: Commit[] = [];
+    const { maxErrorResolutionAttempts = 1 } = options;
+
+    console.debug("DEBUG starting to process userRawPrompt:", userRawPrompt);
+
+    try {
+      const fullPrompt = await this.generateFullPrompt(userRawPrompt);
+      const generatedCode = await generateCode(fullPrompt);
+
+      await applyChangesToSourceCode(generatedCode);
+
+      if (this.containsPackageJsonChanges(generatedCode)) {
+        console.log("package.json updates found");
+        await executeCommand(INSTALL_COMMAND, this.sourceCodePath);
+      }
+
+      const initialCommit = await createGitCommit(
+        this.sourceCodePath, 
+        userRawPrompt
+      );
+      commits.push(initialCommit);
+
+      await this.handleBuildProcess(
+        userRawPrompt,
+        commits,
+        maxErrorResolutionAttempts
+      );
+
+      return commits;
+    } catch (error) {
+      console.error("Error processing prompt:", error);
+      throw new Error(`Failed to process prompt: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  private async generateFullPrompt(userRawPrompt: string): Promise<string> {
+    const promptInstructions = `
+Source code for my project is given below between 'SOURCE_START' and 'SOURCE_END'.
+Your specific instructions for exactly how to add, update, or delete code from my project's source code is between 'TASK_START' and 'TASK_END'. 
+In the source code, lines starting with ${this.delimiter} are paths to files, followed by that file's content on the next line.
+Existing project dependencies are provided. Reuse existing dependencies when applicable.
+Add or remove dependencies to the package.json when needed, and provide the entire file in the response with only the needed changes.
+Always include or remove the corresponding @types package if relevant to the added or removed package.
+Your output should only contain ${this.delimiter}put_file_path_here followed by the updated contents of that file.
+Do not give other output except for that, meaning no explanation or markup.
+NEVER put comments in JSON files. Do not add single line comments in the code. Do not remove existing comments.
+If a file should be removed entirely, include ${this.delimiter}file_path line with a blank line following.`;
+
+    const projectContentString = await combineFilesIntoString(this.sourceCodePath);
+
+    return `${promptInstructions}\nTASK_START\n${userRawPrompt}]\nTASK_END\nSOURCE_START\n${projectContentString}\nSOURCE_END`;
+  }
+
+  private async handleBuildProcess(
+    userRawPrompt: string,
+    commits: Commit[],
+    maxAttempts: number
+  ): Promise<void> {
+    let attempts = 0;
+
+    while (attempts < maxAttempts) {
+      try {
+        await executeCommand(BUILD_COMMAND, this.sourceCodePath);
+        return;
+      } catch (error) {
+        attempts++;
+        console.error(`Build attempt ${attempts} failed:`, error);
+
+        if (attempts < maxAttempts) {
+          await this.attemptBuildErrorResolution(
+            error instanceof Error ? error.message : String(error)
+          );
+          
+          const errorResolutionCommit = await createGitCommit(
+            this.sourceCodePath,
+            `Attempt ${attempts} to auto resolve build error from previous commit: ${userRawPrompt}`
+          );
+          commits.push(errorResolutionCommit);
+        } else {
+          throw new Error(`Build failed after ${maxAttempts} attempts`);
+        }
+      }
+    }
+  }
+
+  private async attemptBuildErrorResolution(buildCommandOutput: string): Promise<void> {
+    const errorResolutionPrompt = this.generateErrorResolutionPrompt(buildCommandOutput);
+    
+    console.log("DEBUG errorResolutionPrompt:", errorResolutionPrompt);
+
+    const generatedCodeToFixBuildErrors = await generateCode(errorResolutionPrompt);
+    await applyChangesToSourceCode(generatedCodeToFixBuildErrors);
+  }
+
+  private generateErrorResolutionPrompt(buildCommandOutput: string): string {
+    const errorResolutionPromptInstructions = `
+After running command "${BUILD_COMMAND}" I get the error between 'OUTPUT_START' and 'OUTPUT_END' below:
+OUTPUT_START\n${buildCommandOutput}\nOUTPUT_END
+Update my project source code to fix these errors.
+My project source code is given below between 'SOURCE_START' and 'SOURCE_END'.
+In the source code, lines starting with ${this.delimiter} are paths to files, followed by that file's content on the next line.
+Your output should only contain ${this.delimiter}put_file_path_here followed by the updated contents of that file.
+Do not give other output except for that, meaning no explanation or markup. Do not add or remove any comments in the code.`;
+
+    const projectContentString = combineFilesIntoString(this.sourceCodePath);
+
+    return `${errorResolutionPromptInstructions}\nSOURCE_START\n${projectContentString}\nSOURCE_END`;
+  }
+
+  private containsPackageJsonChanges(input: string): boolean {
+    const lines = input.split(/\r?\n/);
+    return lines.some(line => line.trim() === `${this.delimiter}package.json`);
+  }
+}
+
+export const promptProcessor = new PromptProcessor();
+export type { Commit, ProcessPromptOptions };
