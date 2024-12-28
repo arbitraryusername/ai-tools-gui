@@ -6,7 +6,7 @@
   "main": "dist/server.js",
   "scripts": {
     "start": "node dist/server.js",
-    "dev": "ts-node-dev --respawn src/server.ts",
+    "dev": "ts-node-dev --loader ts-node/esm --respawn src/server.ts",
     "dev:debug": "ts-node-dev --respawn --inspect=9229 -- src/server.ts",
     "build": "tsc"
   },
@@ -23,6 +23,7 @@
   "devDependencies": {
     "@types/express": "^4.17.21",
     "@types/node": "^20.4.0",
+    "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0"
   }
 }
