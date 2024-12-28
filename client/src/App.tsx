@@ -9,7 +9,8 @@ const darkTheme = createTheme({
 });
 
 function App() {
-  const [localDirectory, setLocalDirectory] = useState('');
+  const defaultPath = 'C:/Users/craig/dev/ai-tools-gui';
+  const [sourceAbsolutePath, setSourceAbsolutePath] = useState(defaultPath);
   const [prompt, setPrompt] = useState('');
 
   const handleSubmit = async () => {
@@ -18,7 +19,7 @@ function App() {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ prompt }),
+      body: JSON.stringify({ prompt, sourceAbsolutePath }),
     });
 
     const data = await response.json();
@@ -32,8 +33,8 @@ function App() {
         <TextField
           label="Local Directory Full Path"
           variant="outlined"
-          value={localDirectory}
-          onChange={(e) => setLocalDirectory(e.target.value)}
+          value={sourceAbsolutePath}
+          onChange={(e) => setSourceAbsolutePath(e.target.value)}
           fullWidth
         />
         <TextField

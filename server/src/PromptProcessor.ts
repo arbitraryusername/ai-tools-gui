@@ -29,7 +29,7 @@ class PromptProcessor {
     this.sourceCodePath = getSourceCodeAbsolutePath();
   }
 
-  async processPrompt(
+  async process(
     userRawPrompt: string, 
     options: ProcessPromptOptions = {}
   ): Promise<Commit[]> {
