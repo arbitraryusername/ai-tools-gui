@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { TextField, Button, CssBaseline, ThemeProvider, createTheme } from '@mui/material';
+import { Collapse } from 'react-collapse';
 import './App.css'
 
 const darkTheme = createTheme({
@@ -8,10 +9,19 @@ const darkTheme = createTheme({
   },
 });
 
+interface Commit {
+  hash: string;
+  message: string;
+  diff: string;
+  timestamp: string;
+}
+
 function App() {
   const defaultPath = 'C:/Users/craig/dev/ai-tools-gui';
   const [sourceAbsolutePath, setSourceAbsolutePath] = useState(defaultPath);
   const [prompt, setPrompt] = useState('');
+  const [commits, setCommits] = useState<Commit[]>([]);
+  const [isOpen, setIsOpen] = useState<number | null>(null);
 
   const handleSubmit = async () => {
     const response = await fetch('http://localhost:3001/api/processPrompt', {
@@ -23,7 +33,16 @@ function App() {
     });
 
     const data = await response.json();
-    console.log(data);
+
+    if (data.commits) {
+      const newCommits = data.commits.map((commit: Commit) => ({
+        hash: commit.hash,
+        message: commit.message,
+        diff: commit.diff,
+        timestamp: commit.timestamp.toString(),
+      }));
+      setCommits(newCommits.concat(commits));
+    }
   };
 
   return (
@@ -48,6 +67,21 @@ function App() {
         />
         <Button variant="contained" onClick={handleSubmit}>Submit</Button>
       </div>
+      {commits.length > 0 && (
+        <div>
+          <h3>Commits:</h3>
+          {commits.map((commit, index) => (
+            <div key={commit.hash}>
+              <div onClick={() => setIsOpen(isOpen === index ? null : index)}>
+                <strong>{commit.timestamp}</strong>: {commit.message}
+              </div>
+              <Collapse isOpened={isOpen === index}>
+                <pre>{commit.diff}</pre>
+              </Collapse>
+            </div>
+          ))}
+        </div>
+      )}
     </ThemeProvider>
   )
 }

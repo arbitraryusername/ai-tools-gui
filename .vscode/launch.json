@@ -2,14 +2,31 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Attach to Server",
       "type": "node",
       "request": "attach",
-      "name": "Attach to Server",
       "port": 9229,
       "restart": true,
       "sourceMaps": true,
       "outFiles": ["${workspaceFolder}/server/dist/**/*.js"],
-      "skipFiles": ["<node_internals>/**"]
+      "cwd": "${workspaceFolder}/server",
+      "skipFiles": ["<node_internals>/**"],
+      "trace": false
+    },
+    {
+      "name": "Launch Server",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "server", "run", "dev"],
+      "cwd": "${workspaceFolder}",
+      "sourceMaps": true,
+      "outFiles": ["${workspaceFolder}/server/dist/**/*.js"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "env": {
+        "NODE_ENV": "development"
+      }
     }
   ]
 }
