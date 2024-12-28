@@ -1,0 +1,6 @@
+{
+  "watch": ["src"],
+  "ext": "ts",
+  "exec": "node --trace-deprecation --loader ts-node/esm src/index.ts",
+  "ignore": ["dist"]
+}

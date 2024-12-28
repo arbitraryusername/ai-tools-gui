@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { getOpenAiKey } from './AppConfig';
+import { getOpenAiKey } from './AppConfig.js';
 
 interface Model {
   id: string;

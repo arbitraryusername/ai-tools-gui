@@ -1,9 +1,9 @@
-import { getFilePathDelimiter, getSourceCodeAbsolutePath } from './AppConfig';
-import { combineFilesIntoString } from './SourceCodeHelper';
-import { generateCode } from './OpenAIAPI';
-import { applyChangesToSourceCode } from './SourceCodeHelper';
-import { executeCommand } from './ShellUtils';
-import { createGitCommit } from './GitUtils';
+import { getFilePathDelimiter } from './AppConfig.js';
+import { combineFilesIntoString } from './SourceCodeHelper.js';
+import { generateCode } from './OpenAIAPI.js';
+import { applyChangesToSourceCode } from './SourceCodeHelper.js';
+import { executeCommand } from './ShellUtils.js';
+import { createGitCommit } from './GitUtils.js';
 
 // Types
 interface Commit {

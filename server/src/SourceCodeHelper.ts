@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { getFilePathDelimiter, getSourceCodeAbsolutePath } from './AppConfig';
+import { getFilePathDelimiter } from './AppConfig.js';
 
 /**
  * Applies code changes by updating or deleting files based on the provided input.

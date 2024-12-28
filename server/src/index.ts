@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { promptProcessor } from 'PromptProcessor';
+import { promptProcessor } from './PromptProcessor.js';
 
 const app = express();
 const PORT = 3001;
@@ -10,7 +10,13 @@ app.use(cors());
 
 app.use(express.json());
 
+app.listen(PORT, () => {
+  console.log(`Server is running at http://localhost:${PORT}`);
+});
+
 app.post('/api/processPrompt', (req, res) => {
+  console.log("/api/processPrompt -> req.body: ", req.body)
+
   const { prompt, sourceAbsolutePath } = req.body;
   if (!prompt) {
     return res.status(400).json({ error: 'Missing "prompt" parameter.' });
@@ -25,8 +31,4 @@ app.post('/api/processPrompt', (req, res) => {
   } catch (error) {
     return res.status(500).json({ error });
   }
-});
-
-app.listen(PORT, () => {
-  console.log(`Server is running at http://localhost:${PORT}`);
 });
