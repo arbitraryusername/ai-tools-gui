@@ -1,11 +1,5 @@
 import simpleGit, { SimpleGit } from 'simple-git';
-
-interface GitCommitResult {
-  hash: string;
-  message: string;
-  diff: string;
-  timestamp: Date;
-}
+import { GitCommitResult } from 'types';
 
 export async function createGitCommit(
   commitMessage: string,
@@ -59,5 +53,3 @@ export async function revertLastCommit(
     throw new Error(`Failed to revert the most recent commit in repository at "${repoAbsolutePath}". Reason: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
-
-export type { GitCommitResult };

@@ -1,11 +1,6 @@
 import OpenAI from 'openai';
 import { getOpenAiKey } from './AppConfig.js';
-
-interface Model {
-  id: string;
-  inputCost: number;
-  outputCost: number;
-}
+import { Model } from 'types.js';
 
 const MODELS: Model[] = [
   {

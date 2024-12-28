@@ -1,10 +1,6 @@
 import spawn from 'cross-spawn';
 import { ChildProcess } from 'child_process';
-
-interface CommandResult {
-  stdout: string;
-  stderr: string;
-}
+import { CommandResult } from 'types';
 
 export async function executeCommand(
   command: string,
@@ -50,5 +46,3 @@ export async function executeCommand(
     });
   });
 }
-
-export type { CommandResult };

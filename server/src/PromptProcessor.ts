@@ -4,17 +4,7 @@ import { generateCode } from './OpenAIAPI.js';
 import { applyChangesToSourceCode } from './SourceCodeHelper.js';
 import { executeCommand } from './ShellUtils.js';
 import { createGitCommit } from './GitUtils.js';
-
-// Types
-interface Commit {
-  hash: string;
-  message: string;
-  timestamp: Date;
-}
-
-interface ProcessPromptOptions {
-  maxErrorResolutionAttempts?: number;
-}
+import { GitCommitResult, ProcessPromptOptions, ProcessPromptResult } from 'types.js';
 
 // Constants
 const BUILD_COMMAND = "pnpm run build" as const;
@@ -31,41 +21,44 @@ class PromptProcessor {
     userRawPrompt: string,
     sourceAbsolutePath: string,
     options: ProcessPromptOptions = {}
-  ): Promise<Commit[]> {
-    const commits: Commit[] = [];
+  ): Promise<ProcessPromptResult> {
+    const commits: GitCommitResult[] = [];
     const { maxErrorResolutionAttempts = 1 } = options;
-
+  
     console.debug("DEBUG starting to process userRawPrompt:", userRawPrompt);
-
+  
     try {
       const fullPrompt = await this.generateFullPrompt(userRawPrompt, sourceAbsolutePath);
       const generatedCode = await generateCode(fullPrompt);
-
+  
       await applyChangesToSourceCode(generatedCode, sourceAbsolutePath);
-
+  
       if (this.containsPackageJsonChanges(generatedCode)) {
         console.log("package.json updates found");
         await executeCommand(INSTALL_COMMAND, sourceAbsolutePath);
       }
-
+  
       const initialCommit = await createGitCommit(
         userRawPrompt,
         sourceAbsolutePath, 
       );
       commits.push(initialCommit);
-
+  
       // const buildResolutionCommits = await this.handleBuildProcess(
       //   userRawPrompt,
       //   sourceAbsolutePath,
       //   maxErrorResolutionAttempts
       // );
-
+  
       // commits.push(...buildResolutionCommits);
-
-      return commits;
+  
+      return { commits };
     } catch (error) {
       console.error("Error processing prompt:", error);
-      throw new Error(`Failed to process prompt: ${error instanceof Error ? error.message : String(error)}`);
+      return {
+        commits,
+        error: `Failed to process prompt: ${error instanceof Error ? error.message : String(error)}`
+      };
     }
   }
 
@@ -91,9 +84,9 @@ If a file should be removed entirely, include ${this.delimiter}file_path line wi
     userRawPrompt: string,
     sourceAbsolutePath: string,
     maxAttempts: number
-  ): Promise<Commit[]> {
+  ): Promise<GitCommitResult[]> {
     let attempts = 0;
-    const commits: Commit[] = [];
+    const commits: GitCommitResult[] = [];
 
     while (attempts < maxAttempts) {
       try {
@@ -154,4 +147,4 @@ Do not give other output except for that, meaning no explanation or markup. Do n
 }
 
 export const promptProcessor = new PromptProcessor();
-export type { Commit, ProcessPromptOptions };
+export type { ProcessPromptOptions };
