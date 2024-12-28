@@ -8,9 +8,8 @@ import { getFilePathDelimiter, getSourceCodeAbsolutePath } from './AppConfig';
  * @param generatedCodeChanges - The input string containing file delimiters and their corresponding content.
  * @returns A promise that resolves when all operations are successful or throws an error if a problem occurs.
  */
-export async function applyChangesToSourceCode(generatedCodeChanges: string): Promise<void> {
-  const absolutePathStart = getSourceCodeAbsolutePath();
-  console.log(`\n\nApplying changes to base directory: ${absolutePathStart}`);
+export async function applyChangesToSourceCode(generatedCodeChanges: string, sourceAbsolutePath: string): Promise<void> {
+  console.log(`\n\nApplying changes to path ${sourceAbsolutePath}`);
 
   const delimiter = getFilePathDelimiter();
   const regex = new RegExp(`${delimiter}([^\\r\\n]+)\\r?\\n([\\s\\S]*?)(?=${delimiter}|$)`, 'g');
@@ -29,7 +28,7 @@ export async function applyChangesToSourceCode(generatedCodeChanges: string): Pr
 
     console.log(`Processing file (${index + 1}/${matches.length}): ${relativeFilePath}`);
     const normalizedPath = path.normalize(relativeFilePath);
-    const fullPath = path.resolve(absolutePathStart, normalizedPath);
+    const fullPath = path.resolve(sourceAbsolutePath, normalizedPath);
 
     console.log(`Resolved full path: ${fullPath}`);
 

@@ -22,15 +22,14 @@ const INSTALL_COMMAND = "pnpm install" as const;
 
 class PromptProcessor {
   private readonly delimiter: string;
-  private readonly sourceCodePath: string;
 
   constructor() {
     this.delimiter = getFilePathDelimiter();
-    this.sourceCodePath = getSourceCodeAbsolutePath();
   }
 
   async process(
-    userRawPrompt: string, 
+    userRawPrompt: string,
+    sourceAbsolutePath: string,
     options: ProcessPromptOptions = {}
   ): Promise<Commit[]> {
     const commits: Commit[] = [];
@@ -39,27 +38,29 @@ class PromptProcessor {
     console.debug("DEBUG starting to process userRawPrompt:", userRawPrompt);
 
     try {
-      const fullPrompt = await this.generateFullPrompt(userRawPrompt);
+      const fullPrompt = await this.generateFullPrompt(userRawPrompt, sourceAbsolutePath);
       const generatedCode = await generateCode(fullPrompt);
 
-      await applyChangesToSourceCode(generatedCode);
+      await applyChangesToSourceCode(generatedCode, sourceAbsolutePath);
 
       if (this.containsPackageJsonChanges(generatedCode)) {
         console.log("package.json updates found");
-        await executeCommand(INSTALL_COMMAND, this.sourceCodePath);
+        await executeCommand(INSTALL_COMMAND, sourceAbsolutePath);
       }
 
       const initialCommit = await createGitCommit(
-        this.sourceCodePath, 
-        userRawPrompt
+        userRawPrompt,
+        sourceAbsolutePath, 
       );
       commits.push(initialCommit);
 
-      await this.handleBuildProcess(
+      const buildResolutionCommits = await this.handleBuildProcess(
         userRawPrompt,
-        commits,
+        sourceAbsolutePath,
         maxErrorResolutionAttempts
       );
+
+      commits.push(...buildResolutionCommits);
 
       return commits;
     } catch (error) {
@@ -68,7 +69,7 @@ class PromptProcessor {
     }
   }
 
-  private async generateFullPrompt(userRawPrompt: string): Promise<string> {
+  private async generateFullPrompt(userRawPrompt: string, sourceAbsolutePath: string): Promise<string> {
     const promptInstructions = `
 Source code for my project is given below between 'SOURCE_START' and 'SOURCE_END'.
 Your specific instructions for exactly how to add, update, or delete code from my project's source code is between 'TASK_START' and 'TASK_END'. 
@@ -81,34 +82,36 @@ Do not give other output except for that, meaning no explanation or markup.
 NEVER put comments in JSON files. Do not add single line comments in the code. Do not remove existing comments.
 If a file should be removed entirely, include ${this.delimiter}file_path line with a blank line following.`;
 
-    const projectContentString = await combineFilesIntoString(this.sourceCodePath);
+    const projectContentString = await combineFilesIntoString(sourceAbsolutePath);
 
     return `${promptInstructions}\nTASK_START\n${userRawPrompt}]\nTASK_END\nSOURCE_START\n${projectContentString}\nSOURCE_END`;
   }
 
   private async handleBuildProcess(
     userRawPrompt: string,
-    commits: Commit[],
+    sourceAbsolutePath: string,
     maxAttempts: number
-  ): Promise<void> {
+  ): Promise<Commit[]> {
     let attempts = 0;
+    const commits: Commit[] = [];
 
     while (attempts < maxAttempts) {
       try {
-        await executeCommand(BUILD_COMMAND, this.sourceCodePath);
-        return;
+        await executeCommand(BUILD_COMMAND, sourceAbsolutePath);
+        return []; // no new commits to make
       } catch (error) {
         attempts++;
         console.error(`Build attempt ${attempts} failed:`, error);
 
         if (attempts < maxAttempts) {
           await this.attemptBuildErrorResolution(
-            error instanceof Error ? error.message : String(error)
+            error instanceof Error ? error.message : String(error),
+            sourceAbsolutePath
           );
           
           const errorResolutionCommit = await createGitCommit(
-            this.sourceCodePath,
-            `Attempt ${attempts} to auto resolve build error from previous commit: ${userRawPrompt}`
+            `Attempt ${attempts} to auto resolve build error from previous commit: ${userRawPrompt}`,
+            sourceAbsolutePath
           );
           commits.push(errorResolutionCommit);
         } else {
@@ -116,18 +119,20 @@ If a file should be removed entirely, include ${this.delimiter}file_path line wi
         }
       }
     }
+
+    return commits;
   }
 
-  private async attemptBuildErrorResolution(buildCommandOutput: string): Promise<void> {
-    const errorResolutionPrompt = this.generateErrorResolutionPrompt(buildCommandOutput);
+  private async attemptBuildErrorResolution(buildCommandOutput: string, sourceAbsolutePath: string): Promise<void> {
+    const errorResolutionPrompt = this.generateErrorResolutionPrompt(buildCommandOutput, sourceAbsolutePath);
     
     console.log("DEBUG errorResolutionPrompt:", errorResolutionPrompt);
 
     const generatedCodeToFixBuildErrors = await generateCode(errorResolutionPrompt);
-    await applyChangesToSourceCode(generatedCodeToFixBuildErrors);
+    await applyChangesToSourceCode(generatedCodeToFixBuildErrors, sourceAbsolutePath);
   }
 
-  private generateErrorResolutionPrompt(buildCommandOutput: string): string {
+  private generateErrorResolutionPrompt(buildCommandOutput: string, sourceAbsolutePath: string): string {
     const errorResolutionPromptInstructions = `
 After running command "${BUILD_COMMAND}" I get the error between 'OUTPUT_START' and 'OUTPUT_END' below:
 OUTPUT_START\n${buildCommandOutput}\nOUTPUT_END
@@ -137,7 +142,7 @@ In the source code, lines starting with ${this.delimiter} are paths to files, fo
 Your output should only contain ${this.delimiter}put_file_path_here followed by the updated contents of that file.
 Do not give other output except for that, meaning no explanation or markup. Do not add or remove any comments in the code.`;
 
-    const projectContentString = combineFilesIntoString(this.sourceCodePath);
+    const projectContentString = combineFilesIntoString(sourceAbsolutePath);
 
     return `${errorResolutionPromptInstructions}\nSOURCE_START\n${projectContentString}\nSOURCE_END`;
   }

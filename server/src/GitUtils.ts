@@ -8,8 +8,8 @@ interface GitCommitResult {
 }
 
 export async function createGitCommit(
+  commitMessage: string,
   repoAbsolutePath: string,
-  commitMessage: string
 ): Promise<GitCommitResult> {
   try {
     const git: SimpleGit = simpleGit(repoAbsolutePath);

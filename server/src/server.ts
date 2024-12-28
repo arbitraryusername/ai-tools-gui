@@ -20,7 +20,7 @@ app.post('/api/processPrompt', (req, res) => {
   }
 
   try {
-    const commits = promptProcessor.process(prompt);
+    const commits = promptProcessor.process(prompt, sourceAbsolutePath);
     res.json({ commits });
   } catch (error) {
     return res.status(500).json({ error });
