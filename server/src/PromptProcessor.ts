@@ -54,13 +54,13 @@ class PromptProcessor {
       );
       commits.push(initialCommit);
 
-      const buildResolutionCommits = await this.handleBuildProcess(
-        userRawPrompt,
-        sourceAbsolutePath,
-        maxErrorResolutionAttempts
-      );
+      // const buildResolutionCommits = await this.handleBuildProcess(
+      //   userRawPrompt,
+      //   sourceAbsolutePath,
+      //   maxErrorResolutionAttempts
+      // );
 
-      commits.push(...buildResolutionCommits);
+      // commits.push(...buildResolutionCommits);
 
       return commits;
     } catch (error) {
