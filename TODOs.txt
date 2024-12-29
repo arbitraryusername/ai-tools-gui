@@ -1,0 +1,21 @@
+
+SERVER
+- add some code guidelines to prompt, like "ensure business rules and assumptions are not duplicated"
+- add endpoints to express server:
+  - revertLastCommit()
+  - getCommits(pathToRepo)
+
+CLIENT 
+- add button to get the commits for the specified repo
+- after each submission show the commit data in some expandable tabbed thingy or something
+- add button to undo the commit (only on most recent commit)
+- allow users to pick which folders/files are included in each submit
+- capture javascript runtime errors and automatically propose solutions 
+- could have toggle that explains the changes, but this is just nice to have at this point
+- tabs of repos along the left side, tabs of tasks for the current repo along the top
+- each task is like a new thread, meaning we keep context of previous messages
+- after the first message in a task, the user is shown three options for the next prompt,
+  and the user can edit this before submitting. this saves on many keystrokes, and makes this
+  much more practical to use on mobile devices! 
+- could have a refactor/improvement mode vs a new feature mode, which have different
+  UI and/or different workflows.
