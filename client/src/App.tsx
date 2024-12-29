@@ -18,6 +18,8 @@ function App() {
   const [prompt, setPrompt] = useState('');
   const [commits, setCommits] = useState<GitCommit[]>(sampleGitCommits);
   const [isOpen, setIsOpen] = useState<number | null>(null);
+  const [showSplit, setShowSplit] = useState(false);
+  const viewType = showSplit ? "split" : "unified";
 
   const handleSubmit = async () => {
     const response = await fetch('http://localhost:3001/api/processPrompt', {
@@ -99,23 +101,31 @@ function App() {
         <Button variant="contained" onClick={handleSubmit}>
           Submit
         </Button>
+        <label>
+          <input
+            type="checkbox"
+            checked={showSplit}
+            onChange={() => setShowSplit(!showSplit)}
+          />
+          Show Split
+        </label>
       </div>
       {commits.length > 0 && (
         <div>
           <h4>Commits:</h4>
           {commits.map((commit, index) => (
             <div key={commit.hash}>
-            <div
-              onClick={() => setIsOpen(isOpen === index ? null : index)}
-              style={{ cursor: 'pointer', fontWeight: 'bold', marginBottom: '0.5rem' }}
-            >
-              <span style={{ color: 'lightblue' }}>{isOpen === index ? '▼' : '▲'}</span>{' '}
-              <strong>{format(new Date(commit.timestamp), 'PPpp')}</strong>: {commit.message}
+              <div
+                onClick={() => setIsOpen(isOpen === index ? null : index)}
+                style={{ cursor: 'pointer', fontWeight: 'bold', marginBottom: '0.5rem' }}
+              >
+                <span style={{ color: 'lightblue' }}>{isOpen === index ? '▼' : '▲'}</span>{' '}
+                <strong>{format(new Date(commit.timestamp), 'PPpp')}</strong>: {commit.message}
+              </div>
+              <Collapse isOpened={isOpen === index}>
+                <CommitDiffViewer diff={commit.diff} viewType={viewType} />
+              </Collapse>
             </div>
-            <Collapse isOpened={isOpen === index}>
-              <CommitDiffViewer diff={commit.diff} />
-            </Collapse>
-          </div>
           ))}
         </div>
       )}
