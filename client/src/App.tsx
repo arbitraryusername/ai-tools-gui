@@ -49,6 +49,20 @@ function App() {
     await fetch('http://localhost:3001/api/stopApp', { method: 'POST' });
   };
 
+  const handleGetCommits = async () => {
+    const response = await fetch(`http://localhost:3001/api/commits?sourceAbsolutePath=${encodeURIComponent(sourceAbsolutePath)}`);
+    const data = await response.json();
+    if (Array.isArray(data)) {
+      const newCommits = data.map((commit: GitCommit) => ({
+        hash: commit.hash,
+        message: commit.message,
+        diff: commit.diff,
+        timestamp: commit.timestamp,
+      }));
+      setCommits(newCommits);
+    }
+  };
+
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
@@ -66,6 +80,9 @@ function App() {
         </Button>
         <Button variant="contained" onClick={handleStopApp} style={{ backgroundColor: 'lightcoral' }}>
           Stop App
+        </Button>
+        <Button variant="contained" onClick={handleGetCommits} style={{ marginLeft: '8px' }}>
+          Get Commits
         </Button>
         <TextField
           label="Prompt"
@@ -92,7 +109,7 @@ function App() {
               </div>
               <Collapse isOpened={isOpen === index}>
                 <DiffDisplay
-                  oldCode={''} // Use actual old code if available
+                  oldCode={''}
                   newCode={commit.diff}
                   title={`Diff for Commit: ${commit.hash}`}
                 />

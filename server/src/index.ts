@@ -69,7 +69,7 @@ app.post('/api/processPrompt', asyncHandler(async (req: Request, res: Response) 
   return res.json(result as ProcessPromptSuccessResponse);
 }));
 
-app.get('/commits', asyncHandler(async (req: Request, res: Response) => {
+app.get('/api/commits', asyncHandler(async (req: Request, res: Response) => {
   const sourceAbsolutePath = req.query.sourceAbsolutePath as string;
 
   if (!sourceAbsolutePath) {
