@@ -101,18 +101,21 @@ function App() {
         <Button variant="contained" onClick={handleSubmit}>
           Submit
         </Button>
-        <label>
-          <input
-            type="checkbox"
-            checked={showSplit}
-            onChange={() => setShowSplit(!showSplit)}
-          />
-          Show Split
-        </label>
       </div>
       {commits.length > 0 && (
-        <div>
-          <h4>Commits:</h4>
+        <div style={{ marginTop: '24px' }}>
+          <div style={{ marginBottom: '8px' }}>
+            <span style={{ marginRight: '16px', fontSize: '1.1rem' }}>Recent Commits</span>
+            <label>
+              <input
+                type="checkbox"
+                checked={showSplit}
+                onChange={() => setShowSplit(!showSplit)}
+              />
+              Show Diffs Split
+            </label>
+          </div>
+          
           {commits.map((commit, index) => (
             <div key={commit.hash}>
               <div
