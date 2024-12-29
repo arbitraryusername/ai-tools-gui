@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState } from 'react';
 import { Collapse } from 'react-collapse';
 import { TextField, Button, CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import { format } from 'date-fns';
+import DiffDisplay from './components/DiffViewer';
 import { GitCommit, sampleGitCommits } from '@ai-tools-gui/shared';
-import './App.css'
+import './App.css';
 
 const darkTheme = createTheme({
   palette: {
@@ -60,8 +61,12 @@ function App() {
           fullWidth
           className="local-directory-full-path"
         />
-        <Button variant="contained" onClick={handleStartApp} style={{ backgroundColor: 'lightgreen', marginRight: '8px' }}>Start App</Button>
-        <Button variant="contained" onClick={handleStopApp} style={{ backgroundColor: 'lightcoral' }}>Stop App</Button>
+        <Button variant="contained" onClick={handleStartApp} style={{ backgroundColor: 'lightgreen', marginRight: '8px' }}>
+          Start App
+        </Button>
+        <Button variant="contained" onClick={handleStopApp} style={{ backgroundColor: 'lightcoral' }}>
+          Stop App
+        </Button>
         <TextField
           label="Prompt"
           variant="outlined"
@@ -72,25 +77,32 @@ function App() {
           fullWidth
           className="prompt"
         />
-        <Button variant="contained" onClick={handleSubmit}>Submit</Button>
+        <Button variant="contained" onClick={handleSubmit}>
+          Submit
+        </Button>
       </div>
       {commits.length > 0 && (
         <div>
           <h4>Commits:</h4>
           {commits.map((commit, index) => (
             <div key={commit.hash}>
-              <div onClick={() => setIsOpen(isOpen === index ? null : index)}>
-                <span style={{ color: 'lightblue' }}>{isOpen === index ? '▼' : '▲'}</span> <strong>{format(new Date(commit.timestamp), 'PPpp')}</strong>: {commit.message}
+              <div onClick={() => setIsOpen(isOpen === index ? null : index)} style={{ cursor: 'pointer' }}>
+                <span style={{ color: 'lightblue' }}>{isOpen === index ? '▼' : '▲'}</span>{' '}
+                <strong>{format(new Date(commit.timestamp), 'PPpp')}</strong>: {commit.message}
               </div>
               <Collapse isOpened={isOpen === index}>
-                <pre>{commit.diff}</pre>
+                <DiffDisplay
+                  oldCode={''} // Use actual old code if available
+                  newCode={commit.diff}
+                  title={`Diff for Commit: ${commit.hash}`}
+                />
               </Collapse>
             </div>
           ))}
         </div>
       )}
     </ThemeProvider>
-  )
+  );
 }
 
-export default App
+export default App;
