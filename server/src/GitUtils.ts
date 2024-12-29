@@ -55,9 +55,10 @@ export async function revertLastCommit(
 }
 
 /**
- * Fetches the last 5 commits from the target Git repository.
- * @param repoAbsolutePath The absolute path to the Git repository.
- * @returns A promise that resolves to an array of the last 5 commits.
+ * Fetches the last `count` commits from the target Git repository.
+ * @param repoAbsolutePath - The absolute path to the Git repository.
+ * @param count - The number of commits to retrieve.
+ * @returns A promise that resolves to an array of the last `count` commits.
  */
 export async function getLastCommits(
   repoAbsolutePath: string,
@@ -66,9 +67,10 @@ export async function getLastCommits(
   try {
     const git: SimpleGit = simpleGit(repoAbsolutePath);
 
-    // Fetch the last 5 commits
+    // Fetch the specified number of commits
     const log = await git.log({ maxCount: count });
 
+    // Map each commit to a GitCommit object with detailed diff and timestamp
     const commits: GitCommit[] = await Promise.all(
       log.all.map(async (entry) => {
         const commitDiff = await git.show([entry.hash]);
@@ -82,11 +84,11 @@ export async function getLastCommits(
       })
     );
 
-    console.log(`Fetched the last 5 commits from the repository at "${repoAbsolutePath}"`);
+    console.log(`Fetched the last ${count} commits from the repository at "${repoAbsolutePath}"`);
     return commits;
   } catch (error) {
     throw new Error(
-      `Failed to fetch the last 5 commits in repository at "${repoAbsolutePath}". Reason: ${
+      `Failed to fetch the last ${count} commits in repository at "${repoAbsolutePath}". Reason: ${
         error instanceof Error ? error.message : String(error)
       }`
     );

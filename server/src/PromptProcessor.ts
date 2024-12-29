@@ -38,8 +38,8 @@ class PromptProcessor {
   
       if (this.containsPackageJsonChanges(generatedCode)) {
         console.log("package.json updates found");
-        await devServerManager.stopDevServer();
-        await executeCommand(INSTALL_COMMAND, sourceAbsolutePath);
+        // await devServerManager.stopDevServer();
+        // await executeCommand(INSTALL_COMMAND, sourceAbsolutePath);
       }
   
       const initialCommit = await createGitCommit(
@@ -48,9 +48,9 @@ class PromptProcessor {
       );
       commits.push(initialCommit);
 
-      await executeCommand(BUILD_COMMAND, sourceAbsolutePath);
+      // await executeCommand(BUILD_COMMAND, sourceAbsolutePath);
       // build command didn't throw error, so start the dev server(s)
-      await devServerManager.startDevServer(sourceAbsolutePath);
+      // await devServerManager.startDevServer(sourceAbsolutePath);
 
       // TODO: use auto build error resolution code
   
