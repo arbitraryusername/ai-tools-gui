@@ -76,6 +76,6 @@ app.get('/api/commits', asyncHandler(async (req: Request, res: Response) => {
     return res.status(400).json({ error: 'Missing "sourceAbsolutePath" query parameter.' });
   }
 
-  const commits = await getLastCommits(sourceAbsolutePath, 5);
+  const commits = await getLastCommits(sourceAbsolutePath, 10);
   res.json(commits);
 }));

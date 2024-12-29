@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Collapse } from 'react-collapse';
-import { TextField, Button, CssBaseline, ThemeProvider, createTheme } from '@mui/material';
+import { TextField, Button, CssBaseline, ThemeProvider, createTheme, Box, Typography } from '@mui/material';
 import { format } from 'date-fns';
 import { GitCommit, sampleGitCommits } from '@ai-tools-gui/shared';
 import './App.css';
@@ -127,14 +127,39 @@ function App() {
           
           {commits.map((commit, index) => (
             <div key={commit.hash}>
-              <div
+              <Box
                 onClick={() => setIsOpen(isOpen === index ? null : index)}
-                style={{ cursor: 'pointer', marginBottom: '0.5rem' }}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  cursor: 'pointer',
+                  marginBottom: '0.5rem',
+                  gap: 2, // Material-UI spacing scale (2 = 16px)
+                }}
               >
-                <span style={{ color: 'lightblue' }}>{isOpen === index ? '▼' : '▲'}</span>{' '}
-                {format(new Date(commit.timestamp), 'MMM d yyyy HH:mm:ss')}&nbsp;&nbsp;&nbsp;
-                <strong style={{ color: 'lightblue' }}>{commit.message}</strong>
-              </div>
+                <Typography
+                  component="span"
+                  sx={{ color: 'lightblue', flexShrink: 0 }}
+                >
+                  {isOpen === index ? '▼' : '▲'}
+                </Typography>
+                <Typography
+                  component="span"
+                  sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
+                >
+                  {format(new Date(commit.timestamp), 'MMM d yyyy HH:mm:ss')}
+                </Typography>
+                <Typography
+                  component="strong"
+                  sx={{
+                    color: 'lightblue',
+                    flex: 1,
+                    wordBreak: 'break-word',
+                  }}
+                >
+                  {commit.message}
+                </Typography>
+              </Box>
               <Collapse isOpened={isOpen === index}>
                 <CommitDiffViewer diff={commit.diff} viewType={viewType} />
               </Collapse>
