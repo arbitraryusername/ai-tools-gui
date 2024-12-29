@@ -1,10 +1,10 @@
 import React from 'react';
-import { parseDiff, Diff, Hunk } from 'react-diff-view';
+import { parseDiff, Diff, Hunk, ViewType } from 'react-diff-view';
 import 'react-diff-view/style/index.css';
 
 interface CommitDiffViewerProps {
   diff: string;
-  viewType: string;
+  viewType: ViewType;
 }
 
 const CommitDiffViewer: React.FC<CommitDiffViewerProps> = ({ diff, viewType }) => {

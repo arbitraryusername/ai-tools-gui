@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Collapse } from 'react-collapse';
-import { TextField, Button, CssBaseline, ThemeProvider, createTheme, Box, Typography } from '@mui/material';
 import { format } from 'date-fns';
+import { TextField, Button, CssBaseline, ThemeProvider, createTheme, Box, Typography } from '@mui/material';
+import RefreshIcon from '@mui/icons-material/Refresh'; 
+import type { ViewType } from 'react-diff-view';
+
 import { GitCommit, sampleGitCommits } from '@ai-tools-gui/shared';
-import './App.css';
 import CommitDiffViewer from './components/DiffViewer';
+import './App.css';
 
 const darkTheme = createTheme({
   palette: {
@@ -19,7 +22,7 @@ function App() {
   const [commits, setCommits] = useState<GitCommit[]>(sampleGitCommits);
   const [isOpen, setIsOpen] = useState<number | null>(null);
   const [showSplit, setShowSplit] = useState(false);
-  const viewType = showSplit ? "split" : "unified";
+  const viewType: ViewType = showSplit ? 'split' : 'unified';
 
   const handleSubmit = async () => {
     const response = await fetch('http://localhost:3001/api/processPrompt', {
@@ -94,9 +97,6 @@ function App() {
         <Button variant="contained" onClick={handleStopApp} color="error">
           Stop App
         </Button>
-        <Button variant="contained" onClick={handleGetCommits} color="primary" sx={{ marginLeft: 2 }}>
-          Get Commits
-        </Button>
         <TextField
           label="Prompt"
           variant="outlined"
@@ -113,18 +113,34 @@ function App() {
       </div>
       {commits.length > 0 && (
         <div style={{ marginTop: '24px' }}>
-          <div style={{ marginBottom: '8px' }}>
-            <span style={{ marginRight: '16px', fontSize: '1.1rem' }}>Recent Commits</span>
-            <label>
-              <input
-                type="checkbox"
-                checked={showSplit}
-                onChange={() => setShowSplit(!showSplit)}
+          <Box
+            display="flex"
+            alignItems="center"
+            marginBottom={2}
+            justifyContent="space-between"
+          >
+            <Typography variant="h6" component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
+              Last 10 Commits
+              <RefreshIcon
+                onClick={handleGetCommits}
+                sx={{
+                  cursor: 'pointer',
+                  marginLeft: 2,
+                  color: 'primary.main',
+                }}
               />
-              Show Diffs In Split View
-            </label>
-          </div>
-          
+            </Typography>
+            <Box display="inline-flex" alignItems="center">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={showSplit}
+                  onChange={() => setShowSplit(!showSplit)}
+                />
+                Show Diffs In Split View
+              </label>
+            </Box>
+          </Box>
           {commits.map((commit, index) => (
             <div key={commit.hash}>
               <Box
