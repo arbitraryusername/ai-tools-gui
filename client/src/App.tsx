@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Collapse } from 'react-collapse';
 import { TextField, Button, CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import { format } from 'date-fns';
@@ -71,6 +71,11 @@ function App() {
     }
   };
 
+  // Automatically fetch commits when the component mounts
+  useEffect(() => {
+    handleGetCommits();
+  }, []); // Empty dependency array ensures this runs only once
+
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
@@ -127,7 +132,7 @@ function App() {
                 style={{ cursor: 'pointer', marginBottom: '0.5rem' }}
               >
                 <span style={{ color: 'lightblue' }}>{isOpen === index ? '▼' : '▲'}</span>{' '}
-                {format(new Date(commit.timestamp), 'MMM d yyyy @HH:mm:ss')}&nbsp;&nbsp;&nbsp;
+                {format(new Date(commit.timestamp), 'MMM d yyyy HH:mm:ss')}&nbsp;&nbsp;&nbsp;
                 <strong style={{ color: 'lightblue' }}>{commit.message}</strong>
               </div>
               <Collapse isOpened={isOpen === index}>

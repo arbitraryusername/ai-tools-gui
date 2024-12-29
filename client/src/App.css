@@ -14,8 +14,15 @@ body {
   font-size: 0.85rem!important;
 }
 
+.diff-line > .diff-code-delete,
+.diff-line > .diff-code-insert,
+.diff-line > .diff-gutter-delete,
+.diff-line > .diff-gutter-insert {
+  color: #000;
+}
+
 :root {
-  --diff-text-color: #999!important;
-  --diff-code-insert-background-color: #eaffee!important;
-  --diff-code-delete-background-color: #fdeff0!important;
+  --diff-text-color: #AAA!important;
+  --diff-code-insert-background-color: #c7efd5!important;
+  --diff-code-delete-background-color: #f6c7cb!important;
 }
