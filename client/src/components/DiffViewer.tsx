@@ -12,10 +12,10 @@ const CommitDiffViewer: React.FC<CommitDiffViewerProps> = ({ diff, viewType }) =
     const files = parseDiff(diff);
 
     return (
-      <div>
+      <div style={{ margin: '1rem 0 2rem 0' }}>
         {files.map(({ oldPath, newPath, type, hunks }) => {
           return (
-            <div key={newPath || oldPath} style={{ marginBottom: '1rem' }}>
+            <div key={newPath || oldPath} style={{ marginBottom: '2rem' }}>
               <div style={{ width: '100%', borderBottom: '1px solid white', marginBottom: '8px', fontWeight: 'bold' }}>
                 {type === 'rename'
                   ? `Renamed: ${oldPath} → ${newPath}`

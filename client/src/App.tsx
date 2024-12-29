@@ -161,7 +161,7 @@ function App() {
                   display: 'flex',
                   alignItems: 'flex-start',
                   cursor: 'pointer',
-                  marginBottom: '0.5rem',
+                  marginBottom: '1rem',
                   gap: 2,
                 }}
               >
