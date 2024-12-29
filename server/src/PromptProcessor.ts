@@ -4,7 +4,8 @@ import { generateCode } from './OpenAIAPI.js';
 import { applyChangesToSourceCode } from './SourceCodeHelper.js';
 import { executeCommand } from './ShellUtils.js';
 import { createGitCommit } from './GitUtils.js';
-import { GitCommitResult, ProcessPromptOptions, ProcessPromptResult } from 'types.js';
+import { ProcessPromptOptions, ProcessPromptResult } from 'types.js';
+import { GitCommit } from '@ai-tools-gui/shared';
 
 // Constants
 const BUILD_COMMAND = "pnpm run build" as const;
@@ -22,7 +23,7 @@ class PromptProcessor {
     sourceAbsolutePath: string,
     options: ProcessPromptOptions = {}
   ): Promise<ProcessPromptResult> {
-    const commits: GitCommitResult[] = [];
+    const commits: GitCommit[] = [];
     const { maxErrorResolutionAttempts = 1 } = options;
   
     console.debug("DEBUG starting to process userRawPrompt:", userRawPrompt);
@@ -84,9 +85,9 @@ If a file should be removed entirely, include ${this.delimiter}file_path line wi
     userRawPrompt: string,
     sourceAbsolutePath: string,
     maxAttempts: number
-  ): Promise<GitCommitResult[]> {
+  ): Promise<GitCommit[]> {
     let attempts = 0;
-    const commits: GitCommitResult[] = [];
+    const commits: GitCommit[] = [];
 
     while (attempts < maxAttempts) {
       try {

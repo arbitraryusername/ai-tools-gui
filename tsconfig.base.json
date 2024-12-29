@@ -5,6 +5,10 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+  },
+  "paths": {
+    "@ai-tools-gui/shared": ["shared/src/index.ts"]
   }
 }

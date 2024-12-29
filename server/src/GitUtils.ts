@@ -1,10 +1,10 @@
 import simpleGit, { SimpleGit } from 'simple-git';
-import { GitCommitResult } from 'types';
+import { GitCommit } from '@ai-tools-gui/shared';
 
 export async function createGitCommit(
   commitMessage: string,
   repoAbsolutePath: string,
-): Promise<GitCommitResult> {
+): Promise<GitCommit> {
   try {
     const git: SimpleGit = simpleGit(repoAbsolutePath);
 
@@ -30,7 +30,7 @@ export async function createGitCommit(
 
 export async function revertLastCommit(
   repoAbsolutePath: string
-): Promise<GitCommitResult> {
+): Promise<GitCommit> {
   try {
     const git: SimpleGit = simpleGit(repoAbsolutePath);
 

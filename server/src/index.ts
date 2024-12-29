@@ -2,7 +2,8 @@ import express, { NextFunction } from 'express';
 import cors from 'cors';
 import { promptProcessor } from './PromptProcessor.js';
 import { Request, Response } from 'express';
-import { ProcessPromptErrorResponse, ProcessPromptResult, ProcessPromptSuccessResponse } from 'types.js';
+import { 
+  ProcessPromptErrorResponse, ProcessPromptResult, ProcessPromptSuccessResponse } from 'types.js';
 
 const app = express();
 const PORT = 3001;

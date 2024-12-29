@@ -1,25 +1,4 @@
-export interface GitCommitResult {
-  hash: string;
-  message: string;
-  diff: string;
-  timestamp: Date;
-}
-
-export interface ProcessPromptSuccessResponse {
-  commits: GitCommitResult[];
-}
-
-export interface ProcessPromptErrorResponse {
-  error: string;
-  commits: GitCommitResult[]; // commits could be made but some problem occurs later
-}
-
-export interface ProcessPromptBody {
-  prompt: string;
-  sourceAbsolutePath: string;
-}
-
-export type ProcessPromptResult = ProcessPromptSuccessResponse | ProcessPromptErrorResponse;
+import { GitCommit } from '@ai-tools-gui/shared';
 
 export interface CommandResult {
   stdout: string;
@@ -34,4 +13,20 @@ export interface Model {
 
 export interface ProcessPromptOptions {
   maxErrorResolutionAttempts?: number;
+}
+
+export interface ProcessPromptSuccessResponse {
+  commits: GitCommit[];
+}
+
+export interface ProcessPromptErrorResponse {
+  error: string;
+  commits: GitCommit[]; // commits could be made but some problem occurs later
+}
+
+export type ProcessPromptResult = ProcessPromptSuccessResponse | ProcessPromptErrorResponse;
+
+export interface ProcessPromptBody {
+  prompt: string;
+  sourceAbsolutePath: string;
 }

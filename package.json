@@ -3,7 +3,8 @@
   "private": true,
   "workspaces": [
     "client",
-    "server"
+    "server",
+    "shared"
   ],
   "scripts": {
     "build": "concurrently \"pnpm --filter server build\" \"pnpm --filter client build\"",

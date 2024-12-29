@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { TextField, Button, CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import { Collapse } from 'react-collapse';
 import './App.css'
+import { GitCommit } from '@ai-tools-gui/shared';
+import { sampleGitCommits } from 'samplePayloads';
 
 const darkTheme = createTheme({
   palette: {
@@ -9,18 +11,11 @@ const darkTheme = createTheme({
   },
 });
 
-interface Commit {
-  hash: string;
-  message: string;
-  diff: string;
-  timestamp: string;
-}
-
 function App() {
   const defaultPath = 'C:/Users/craig/dev/ai-tools-gui';
   const [sourceAbsolutePath, setSourceAbsolutePath] = useState(defaultPath);
   const [prompt, setPrompt] = useState('');
-  const [commits, setCommits] = useState<Commit[]>([]);
+  const [commits, setCommits] = useState<GitCommit[]>(sampleGitCommits);
   const [isOpen, setIsOpen] = useState<number | null>(null);
 
   const handleSubmit = async () => {
@@ -35,7 +30,7 @@ function App() {
     const data = await response.json();
 
     if (data.commits) {
-      const newCommits = data.commits.map((commit: Commit) => ({
+      const newCommits = data.commits.map((commit: GitCommit) => ({
         hash: commit.hash,
         message: commit.message,
         diff: commit.diff,
@@ -73,7 +68,7 @@ function App() {
           {commits.map((commit, index) => (
             <div key={commit.hash}>
               <div onClick={() => setIsOpen(isOpen === index ? null : index)}>
-                <strong>{commit.timestamp}</strong>: {commit.message}
+                <strong>{commit.timestamp.getDate()}</strong>: {commit.message}
               </div>
               <Collapse isOpened={isOpen === index}>
                 <pre>{commit.diff}</pre>
