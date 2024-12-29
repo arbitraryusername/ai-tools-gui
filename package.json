@@ -7,8 +7,10 @@
     "shared"
   ],
   "scripts": {
-    "build": "concurrently \"pnpm --filter server build\" \"pnpm --filter client build\"",
-    "dev": "concurrently \"pnpm --filter client dev\" \"pnpm --filter server dev\""
+    "build:shared": "pnpm --filter shared build",
+    "build": "pnpm run build:shared && concurrently \"pnpm --filter server build\" \"pnpm --filter client build\"",
+    "dev:shared": "pnpm --filter shared build",
+    "dev": "pnpm run dev:shared && concurrently \"pnpm --filter client dev\" \"pnpm --filter server dev\""
   },
   "devDependencies": {
     "concurrently": "^7.6.0",

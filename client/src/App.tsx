@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { TextField, Button, CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import { Collapse } from 'react-collapse';
+import { TextField, Button, CssBaseline, ThemeProvider, createTheme } from '@mui/material';
+
+import { GitCommit, sampleGitCommits } from '@ai-tools-gui/shared';
+
 import './App.css'
-import { GitCommit } from '@ai-tools-gui/shared';
-import { sampleGitCommits } from 'samplePayloads';
 
 const darkTheme = createTheme({
   palette: {

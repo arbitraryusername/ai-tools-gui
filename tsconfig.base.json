@@ -7,8 +7,8 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
+    "paths": {
+      "@ai-tools-gui/shared": ["shared/src/index.ts"]
+    }
   },
-  "paths": {
-    "@ai-tools-gui/shared": ["shared/src/index.ts"]
-  }
 }
