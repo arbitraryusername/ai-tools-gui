@@ -60,7 +60,7 @@ function App() {
         timestamp: commit.timestamp,
       }));
       console.log("GET commits result: ");
-      console.log(JSON.stringify(newCommits));
+      console.log(newCommits);
       setCommits(newCommits);
     }
   };

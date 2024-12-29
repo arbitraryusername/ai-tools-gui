@@ -62,7 +62,7 @@ export async function revertLastCommit(
  */
 export async function getLastCommits(
   repoAbsolutePath: string,
-  count: number,
+  count: number
 ): Promise<GitCommit[]> {
   try {
     const git: SimpleGit = simpleGit(repoAbsolutePath);
@@ -73,12 +73,15 @@ export async function getLastCommits(
     // Map each commit to a GitCommit object with detailed diff and timestamp
     const commits: GitCommit[] = await Promise.all(
       log.all.map(async (entry) => {
-        const commitDiff = await git.show([entry.hash]);
+        // Retrieve full diff for the commit
+        const fullCommitOutput = await git.show([entry.hash, '--patch', '--no-color']);
+        const diff = preprocessDiff(fullCommitOutput); // Format diff for react-diff-view
         const timestamp = new Date(entry.date);
+
         return {
           hash: entry.hash,
           message: entry.message,
-          diff: commitDiff,
+          diff,
           timestamp,
         };
       })
@@ -94,4 +97,16 @@ export async function getLastCommits(
       }`
     );
   }
+}
+
+/**
+ * Preprocesses the git show output to format it correctly for react-diff-view.
+ * Removes commit metadata and retains only the unified diff content.
+ * @param fullCommitOutput - The raw git show output.
+ * @returns The processed diff string.
+ */
+function preprocessDiff(fullCommitOutput: string): string {
+  const lines = fullCommitOutput.split('\n');
+  const startDiffIndex = lines.findIndex((line) => line.startsWith('diff --git'));
+  return startDiffIndex >= 0 ? lines.slice(startDiffIndex).join('\n') : '';
 }
