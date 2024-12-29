@@ -21,17 +21,17 @@ class PromptProcessor {
   }
 
   async process(
-    userRawPrompt: string,
+    rawPrompt: string,
     sourceAbsolutePath: string,
     options: ProcessPromptOptions = {}
   ): Promise<ProcessPromptResult> {
     const commits: GitCommit[] = [];
     const { maxErrorResolutionAttempts = 1 } = options;
   
-    console.debug("DEBUG starting to process userRawPrompt:", userRawPrompt);
+    console.debug("DEBUG starting to process userRawPrompt:", rawPrompt);
   
     try {
-      const fullPrompt = await this.generateFullPrompt(userRawPrompt, sourceAbsolutePath);
+      const fullPrompt = await this.generateFullPrompt(rawPrompt, sourceAbsolutePath);
       const generatedCode = await generateCode(fullPrompt);
   
       await applyChangesToSourceCode(generatedCode, sourceAbsolutePath);
@@ -42,8 +42,9 @@ class PromptProcessor {
         // await executeCommand(INSTALL_COMMAND, sourceAbsolutePath);
       }
   
+      const commitMessage = `PROMPT: ${rawPrompt}`;
       const initialCommit = await createGitCommit(
-        userRawPrompt,
+        rawPrompt,
         sourceAbsolutePath, 
       );
       commits.push(initialCommit);

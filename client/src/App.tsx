@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Collapse } from 'react-collapse';
-import { TextField, Button, CssBaseline, ThemeProvider, createTheme } from '@mui/material';
+import { TextField, Button, CssBaseline, ThemeProvider, createTheme, Typography } from '@mui/material';
 import { format } from 'date-fns';
 import { GitCommit, sampleGitCommits } from '@ai-tools-gui/shared';
 import './App.css';
@@ -112,7 +112,7 @@ function App() {
                 checked={showSplit}
                 onChange={() => setShowSplit(!showSplit)}
               />
-              Show Diffs Split
+              Show Diffs In Split View
             </label>
           </div>
           
@@ -120,10 +120,10 @@ function App() {
             <div key={commit.hash}>
               <div
                 onClick={() => setIsOpen(isOpen === index ? null : index)}
-                style={{ cursor: 'pointer', fontWeight: 'bold', marginBottom: '0.5rem' }}
+                style={{ cursor: 'pointer', marginBottom: '0.5rem' }}
               >
                 <span style={{ color: 'lightblue' }}>{isOpen === index ? '▼' : '▲'}</span>{' '}
-                <strong>{format(new Date(commit.timestamp), 'PPpp')}</strong>: {commit.message}
+                {format(new Date(commit.timestamp), 'MMM d yyyy @HH:mm:ss')}&nbsp;&nbsp;&nbsp;<strong>{commit.message}</strong>
               </div>
               <Collapse isOpened={isOpen === index}>
                 <CommitDiffViewer diff={commit.diff} viewType={viewType} />
