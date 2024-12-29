@@ -3,39 +3,40 @@ import path from 'path';
 import { getFilePathDelimiter } from './AppConfig.js';
 import gitignoreParser from 'gitignore-parser';
 
-const ALLOWED_EXTENSIONS = [
-  '.ts',
-  '.tsx',
-  '.js',
-  '.jsx',
-  '.html',
-  '.css',
-  '.scss',
-  '.json',
-  '.yml',
-  '.yaml',
-] as const;
+// TODO: should I only use the .gitignore file to determine the initial set of disallowed files? 
+// const ALLOWED_EXTENSIONS = [
+//   '.ts',
+//   '.tsx',
+//   '.js',
+//   '.jsx',
+//   '.html',
+//   '.css',
+//   '.scss',
+//   '.json',
+//   '.yml',
+//   '.yaml',
+// ] as const;
 
-const EXCLUDED_DIRS = new Set([
-  'node_modules',
-  '.git',
-  'dist',
-  'build',
-  '.cache',
-  '.vscode',
-  'public',
-] as const);
+// const EXCLUDED_DIRS = new Set([
+//   'node_modules',
+//   '.git',
+//   'dist',
+//   'build',
+//   '.cache',
+//   '.vscode',
+//   'public',
+// ] as const);
 
-const EXCLUDED_FILES = new Set([
-  'package-lock.json',
-  'pnpm-lock.yaml',
-  'eslint.config.js',
-  'tsconfig.json',
-  'vite-env.d.ts',
-  'vite.config.ts',
-] as const);
+// const EXCLUDED_FILES = new Set([
+//   'package-lock.json',
+//   'pnpm-lock.yaml',
+//   'eslint.config.js',
+//   'tsconfig.json',
+//   'vite-env.d.ts',
+//   'vite.config.ts',
+// ] as const);
 
-const FILE_PROCESSING_CONCURRENCY = 10;
+const FILE_PROCESSING_CONCURRENCY = 20;
 
 interface FileProcessingError extends Error {
   path?: string;
@@ -144,21 +145,43 @@ export async function getSourceFiles(sourceAbsolutePath: string): Promise<{ name
   return await getAllAllowedFiles(sourceAbsolutePath, excludedPaths);
 }
 
+/**
+ * Recursively collects all excluded paths based on a .gitignore file.
+ * @param sourceAbsolutePath - The root directory containing the .gitignore file.
+ * @returns A Set of excluded paths relative to the root directory.
+ */
 async function getExcludedPaths(sourceAbsolutePath: string): Promise<Set<string>> {
+  // Read and parse the .gitignore file
   const gitignoreContent = await fs.readFile(path.join(sourceAbsolutePath, '.gitignore'), 'utf-8');
   const parser = gitignoreParser.compile(gitignoreContent);
   const allExcludedPaths: Set<string> = new Set();
 
-  const entries = await fs.readdir(sourceAbsolutePath, { withFileTypes: true });
+  /**
+   * Recursively scan directories and check against the .gitignore parser.
+   * @param dir - Current directory to scan.
+   * @param relativePath - Relative path from the source root.
+   */
+  async function scanDirectory(dir: string, relativePath: string) {
+    const entries = await fs.readdir(dir, { withFileTypes: true });
 
-  for (const entry of entries) {
-    const fullPath = path.join(sourceAbsolutePath, entry.name);
+    for (const entry of entries) {
+      const entryRelativePath = path.join(relativePath, entry.name);
+      const fullPath = path.join(dir, entry.name);
 
-    if (parser.denies(fullPath)) {
-      allExcludedPaths.add(entry.name);
+      if (parser.denies(entryRelativePath)) {
+        allExcludedPaths.add(entryRelativePath);
+      }
+
+      // Recurse into subdirectories
+      if (entry.isDirectory() && !parser.denies(entryRelativePath)) {
+        await scanDirectory(fullPath, entryRelativePath);
+      }
     }
   }
-  
+
+  // Start the recursive scan from the source root
+  await scanDirectory(sourceAbsolutePath, '');
+
   return allExcludedPaths;
 }
 
@@ -168,16 +191,19 @@ async function getAllAllowedFiles(directory: string, excludedPaths: Set<string>)
   const entries = await fs.readdir(directory, { withFileTypes: true });
   const tasks = entries.map(async (entry) => {
     const fullPath = path.join(directory, entry.name);
-    const ext = path.extname(entry.name).toLowerCase() as typeof ALLOWED_EXTENSIONS[number];
+    // const ext = path.extname(entry.name).toLowerCase() as typeof ALLOWED_EXTENSIONS[number];
 
     if (entry.isDirectory()) {
-      if (!excludedPaths.has(entry.name) && !EXCLUDED_DIRS.has(entry.name as any)) {
+      // if (!excludedPaths.has(entry.name) && !EXCLUDED_DIRS.has(entry.name as any)) {
+      if (!excludedPaths.has(entry.name)) {
         const children = await getAllAllowedFiles(fullPath, excludedPaths);
         fileTree.push({ name: entry.name, path: fullPath, children });
       }
     } else if (entry.isFile()) {
-      const isExcludedFile = excludedPaths.has(entry.name) || EXCLUDED_FILES.has(entry.name as any);
-      if (ALLOWED_EXTENSIONS.includes(ext) && !isExcludedFile) {
+      // const isExcludedFile = excludedPaths.has(entry.name) || EXCLUDED_FILES.has(entry.name as any);
+      const isExcludedFile = excludedPaths.has(entry.name);
+      // if (ALLOWED_EXTENSIONS.includes(ext) && !isExcludedFile) {
+      if (!isExcludedFile) {
         fileTree.push({ name: entry.name, path: fullPath });
       }
     }

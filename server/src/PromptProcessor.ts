@@ -43,7 +43,7 @@ class PromptProcessor {
   
       const commitMessage = `PROMPT: ${rawPrompt}`;
       const initialCommit = await createGitCommit(
-        rawPrompt,
+        commitMessage,
         sourceAbsolutePath, 
       );
       commits.push(initialCommit);
