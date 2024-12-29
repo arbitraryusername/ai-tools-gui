@@ -3,8 +3,12 @@ import cors from 'cors';
 import { promptProcessor } from './PromptProcessor.js';
 import { Request, Response } from 'express';
 import { 
-  ProcessPromptErrorResponse, ProcessPromptResult, ProcessPromptSuccessResponse } from 'types.js';
+  ProcessPromptErrorResponse,
+  ProcessPromptResult,
+  ProcessPromptSuccessResponse
+} from 'types.js';
 import { devServerManager } from './DevServerManager.js';
+import { getLastCommits } from './GitUtils.js';
 
 const app = express();
 const PORT = 3001;
@@ -63,4 +67,15 @@ app.post('/api/processPrompt', asyncHandler(async (req: Request, res: Response) 
   }
 
   return res.json(result as ProcessPromptSuccessResponse);
+}));
+
+app.get('/commits', asyncHandler(async (req: Request, res: Response) => {
+  const sourceAbsolutePath = req.query.sourceAbsolutePath as string;
+
+  if (!sourceAbsolutePath) {
+    return res.status(400).json({ error: 'Missing "sourceAbsolutePath" query parameter.' });
+  }
+
+  const commits = await getLastCommits(sourceAbsolutePath, 5);
+  res.json(commits);
 }));
