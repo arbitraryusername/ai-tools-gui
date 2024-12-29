@@ -53,7 +53,7 @@ function App() {
       <CssBaseline />
       <div>
         <TextField
-          label="Local Directory Full Path"
+          label="Repo Directory Full Path"
           variant="outlined"
           value={sourceAbsolutePath}
           onChange={(e) => setSourceAbsolutePath(e.target.value)}
@@ -76,7 +76,7 @@ function App() {
       </div>
       {commits.length > 0 && (
         <div>
-          <h3>Commits:</h3>
+          <h4>Commits:</h4>
           {commits.map((commit, index) => (
             <div key={commit.hash}>
               <div onClick={() => setIsOpen(isOpen === index ? null : index)}>

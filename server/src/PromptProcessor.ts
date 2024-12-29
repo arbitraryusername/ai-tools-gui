@@ -6,9 +6,11 @@ import { executeCommand } from './ShellUtils.js';
 import { createGitCommit } from './GitUtils.js';
 import { ProcessPromptOptions, ProcessPromptResult } from 'types.js';
 import { GitCommit } from '@ai-tools-gui/shared';
+import { devServerManager } from './DevServerManager.js';
 
 // Constants
-const BUILD_COMMAND = "pnpm run build" as const;
+const BUILD_COMMAND = "pnpm build" as const;
+const DEV_COMMAND = "pnpm dev" as const;
 const INSTALL_COMMAND = "pnpm install" as const;
 
 class PromptProcessor {
@@ -36,6 +38,7 @@ class PromptProcessor {
   
       if (this.containsPackageJsonChanges(generatedCode)) {
         console.log("package.json updates found");
+        await devServerManager.stopDevServer();
         await executeCommand(INSTALL_COMMAND, sourceAbsolutePath);
       }
   
@@ -44,6 +47,10 @@ class PromptProcessor {
         sourceAbsolutePath, 
       );
       commits.push(initialCommit);
+
+      await executeCommand(BUILD_COMMAND, sourceAbsolutePath);
+      // build command didn't throw error, so start the dev server(s)
+      await devServerManager.startDevServer(sourceAbsolutePath);
   
       // const buildResolutionCommits = await this.handleBuildProcess(
       //   userRawPrompt,
