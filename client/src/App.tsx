@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Collapse } from 'react-collapse';
-import { TextField, Button, CssBaseline, ThemeProvider, createTheme, Typography } from '@mui/material';
+import { TextField, Button, CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import { format } from 'date-fns';
 import { GitCommit, sampleGitCommits } from '@ai-tools-gui/shared';
 import './App.css';
@@ -52,6 +52,10 @@ function App() {
   };
 
   const handleGetCommits = async () => {
+    if (!sourceAbsolutePath) {
+      console.warn('cannot get commits because source path is not set');
+      return;
+    }
     const response = await fetch(`http://localhost:3001/api/commits?sourceAbsolutePath=${encodeURIComponent(sourceAbsolutePath)}`);
     const data = await response.json();
     if (Array.isArray(data)) {
@@ -98,7 +102,7 @@ function App() {
           fullWidth
           className="prompt"
         />
-        <Button variant="contained" onClick={handleSubmit}>
+        <Button variant="contained" onClick={handleSubmit} color="primary">
           Submit
         </Button>
       </div>
@@ -123,7 +127,8 @@ function App() {
                 style={{ cursor: 'pointer', marginBottom: '0.5rem' }}
               >
                 <span style={{ color: 'lightblue' }}>{isOpen === index ? '▼' : '▲'}</span>{' '}
-                {format(new Date(commit.timestamp), 'MMM d yyyy @HH:mm:ss')}&nbsp;&nbsp;&nbsp;<strong>{commit.message}</strong>
+                {format(new Date(commit.timestamp), 'MMM d yyyy @HH:mm:ss')}&nbsp;&nbsp;&nbsp;
+                <strong style={{ color: 'lightblue' }}>{commit.message}</strong>
               </div>
               <Collapse isOpened={isOpen === index}>
                 <CommitDiffViewer diff={commit.diff} viewType={viewType} />

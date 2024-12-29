@@ -109,7 +109,6 @@ export async function getLastCommits(
     );
 
     console.log(`Fetched the last ${count} commits from the repository at "${repoAbsolutePath}"`);
-    console.log(commits);
     return commits;
   } catch (error) {
     throw new Error(
