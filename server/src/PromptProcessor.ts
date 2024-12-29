@@ -51,6 +51,8 @@ class PromptProcessor {
       await executeCommand(BUILD_COMMAND, sourceAbsolutePath);
       // build command didn't throw error, so start the dev server(s)
       await devServerManager.startDevServer(sourceAbsolutePath);
+
+      // TODO: use auto build error resolution code
   
       // const buildResolutionCommits = await this.handleBuildProcess(
       //   userRawPrompt,
