@@ -88,13 +88,13 @@ function App() {
           fullWidth
           className="local-directory-full-path"
         />
-        <Button variant="contained" onClick={handleStartApp} style={{ backgroundColor: 'lightgreen', marginRight: '8px' }}>
+        <Button variant="contained" onClick={handleStartApp} color="success" sx={{ marginRight: 2 }}>
           Start App
         </Button>
-        <Button variant="contained" onClick={handleStopApp} style={{ backgroundColor: 'lightcoral' }}>
+        <Button variant="contained" onClick={handleStopApp} color="error">
           Stop App
         </Button>
-        <Button variant="contained" onClick={handleGetCommits} style={{ marginLeft: '8px' }}>
+        <Button variant="contained" onClick={handleGetCommits} color="primary" sx={{ marginLeft: 2 }}>
           Get Commits
         </Button>
         <TextField
@@ -134,12 +134,13 @@ function App() {
                   alignItems: 'flex-start',
                   cursor: 'pointer',
                   marginBottom: '0.5rem',
-                  gap: 2, // Material-UI spacing scale (2 = 16px)
+                  gap: 2,
                 }}
               >
                 <Typography
                   component="span"
-                  sx={{ color: 'lightblue', flexShrink: 0 }}
+                  color="primary"
+                  sx={{ flexShrink: 0 }}
                 >
                   {isOpen === index ? '▼' : '▲'}
                 </Typography>
@@ -151,8 +152,8 @@ function App() {
                 </Typography>
                 <Typography
                   component="strong"
+                  color="primary"
                   sx={{
-                    color: 'lightblue',
                     flex: 1,
                     wordBreak: 'break-word',
                   }}

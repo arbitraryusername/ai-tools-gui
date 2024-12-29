@@ -15,13 +15,13 @@ const CommitDiffViewer: React.FC<CommitDiffViewerProps> = ({ diff, viewType }) =
       <div>
         {files.map(({ oldPath, newPath, hunks }) => (
           <div key={newPath || oldPath} style={{ marginBottom: '1rem' }}>
-            <strong>
+            <div style={{ width: '100%', borderBottom: '1px solid white', marginBottom: '8px', fontWeight: 'bold' }}>
               {oldPath === '/dev/null'
                 ? `New File: ${newPath}`
                 : newPath === '/dev/null'
                 ? `Deleted File: ${oldPath}`
                 : `${oldPath} → ${newPath}`}
-            </strong>
+            </div>
             <Diff viewType={viewType} hunks={hunks}>
               {(hunks) => hunks.map((hunk) => <Hunk key={hunk.content} hunk={hunk} />)}
             </Diff>
