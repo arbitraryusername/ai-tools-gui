@@ -78,6 +78,7 @@ const EXCLUDED_DIRS = new Set([
   '.cache',
   '.vscode',
   'public',
+  'server',
 ] as const);
 
 const EXCLUDED_FILES = new Set([
