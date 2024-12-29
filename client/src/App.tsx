@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Collapse } from 'react-collapse';
 import { TextField, Button, CssBaseline, ThemeProvider, createTheme } from '@mui/material';
+import { format } from 'date-fns';
 
 import { GitCommit, sampleGitCommits } from '@ai-tools-gui/shared';
 
@@ -69,7 +70,7 @@ function App() {
           {commits.map((commit, index) => (
             <div key={commit.hash}>
               <div onClick={() => setIsOpen(isOpen === index ? null : index)}>
-                <strong>{commit.timestamp.getDate()}</strong>: {commit.message}
+                <span style={{ color: 'lightblue' }}>{isOpen === index ? '▼' : '▲'}</span> <strong>{format(new Date(commit.timestamp), 'PPpp')}</strong>: {commit.message}
               </div>
               <Collapse isOpened={isOpen === index}>
                 <pre>{commit.diff}</pre>
