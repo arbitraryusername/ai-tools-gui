@@ -9,24 +9,21 @@ import {
 } from 'types.js';
 import { devServerManager } from './DevServerManager.js';
 import { getLastCommits } from './GitUtils.js';
+import { getSourceFiles } from './SourceCodeHelper.js';
 
 const app = express();
 const PORT = 3001;
 
-// Enable CORS for all origins
 app.use(cors());
-
 app.use(express.json());
 
 app.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}`);
 });
 
-// Middleware to handle async errors 
 const asyncHandler = (fn: Function) => (req: Request, res: Response, next: NextFunction) =>
   Promise.resolve(fn(req, res, next)).catch(next);
 
-// Global error handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error("Unhandled error:", err);
   res.status(500).json({ commits: [], error: 'Internal Server Error' });
@@ -48,8 +45,6 @@ app.post('/api/stopApp', asyncHandler(async (req: Request, res: Response) => {
 }));
 
 app.post('/api/processPrompt', asyncHandler(async (req: Request, res: Response) => {
-  console.log("/api/processPrompt -> req.body: ", req.body);
-
   const { prompt, sourceAbsolutePath } = req.body;
   if (!prompt) {
     return res.status(400).json({ commits: [], error: 'Missing "prompt" parameter.' });
@@ -59,8 +54,6 @@ app.post('/api/processPrompt', asyncHandler(async (req: Request, res: Response) 
   }
 
   const result: ProcessPromptResult = await promptProcessor.process(prompt, sourceAbsolutePath);
-
-  console.log("/api/processPrompt returning result: ", result)
 
   if ('error' in result) {
     return res.status(500).json(result as ProcessPromptErrorResponse);
@@ -78,4 +71,15 @@ app.get('/api/commits', asyncHandler(async (req: Request, res: Response) => {
 
   const commits = await getLastCommits(sourceAbsolutePath, 10);
   res.json(commits);
+}));
+
+app.get('/api/sourceFiles', asyncHandler(async (req: Request, res: Response) => {
+  const sourceAbsolutePath = req.query.sourceAbsolutePath as string;
+
+  if (!sourceAbsolutePath) {
+    return res.status(400).json({ error: 'Missing "sourceAbsolutePath" query parameter.' });
+  }
+
+  const files = await getSourceFiles(sourceAbsolutePath);
+  res.json(files);
 }));

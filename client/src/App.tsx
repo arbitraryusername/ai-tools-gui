@@ -74,10 +74,19 @@ function App() {
     }
   };
 
-  // Automatically fetch commits when the component mounts
+  const handleGetFiles = async () => {
+    if (!sourceAbsolutePath) {
+      console.warn('cannot get files because source path is not set');
+      return;
+    }
+    const response = await fetch(`http://localhost:3001/api/sourceFiles?sourceAbsolutePath=${encodeURIComponent(sourceAbsolutePath)}`);
+    const files = await response.json();
+    console.log("GET files result: ", files);
+  };
+
   useEffect(() => {
     handleGetCommits();
-  }, []); // Empty dependency array ensures this runs only once
+  }, []);
 
   return (
     <ThemeProvider theme={darkTheme}>
@@ -96,6 +105,9 @@ function App() {
         </Button>
         <Button variant="contained" onClick={handleStopApp} color="error">
           Stop App
+        </Button>
+        <Button variant="contained" onClick={handleGetFiles} color="primary" sx={{ marginRight: 2 }}>
+          Get Files
         </Button>
         <TextField
           label="Prompt"
