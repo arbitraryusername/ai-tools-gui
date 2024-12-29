@@ -61,6 +61,7 @@ function App() {
           multiline
           rows={4}
           fullWidth
+          className="prompt"
         />
         <Button variant="contained" onClick={handleSubmit}>Submit</Button>
       </div>
