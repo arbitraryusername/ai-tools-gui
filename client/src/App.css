@@ -9,3 +9,9 @@ body {
 .local-directory-full-path {
   margin: 8px 0!important;
 }
+
+:root {
+  --diff-text-color: #999!important;
+  --diff-code-insert-background-color: #eaffee!important;
+  --diff-code-delete-background-color: #fdeff0!important;
+}

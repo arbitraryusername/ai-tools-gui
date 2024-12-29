@@ -2,102 +2,65 @@ export interface GitCommit {
   hash: string;
   message: string;
   diff: string;
-  timestamp: Date;
+  timestamp: Date | string;
 }
 
 export const sampleGitCommits: GitCommit[] = [
   {
-    hash: "a1b2c3d4",
-    message: "Refactor authentication middleware",
-    diff: `
-diff --git a/src/middleware/auth.ts b/src/middleware/auth.ts
-index e69de29..0d1d7fc 100644
---- a/src/middleware/auth.ts
-+++ b/src/middleware/auth.ts
-@@ -0,0 +1,10 @@
-+import { Request, Response, NextFunction } from 'express';
-+
-+export const authenticate = (req: Request, res: Response, next: NextFunction) => {
-+  const token = req.header('Authorization')?.replace('Bearer ', '');
-+  if (!token) {
-+    return res.status(401).json({ error: 'Unauthorized' });
-+  }
-+  // Token verification logic here
-+  next();
-+};
-diff --git a/src/routes/user.ts b/src/routes/user.ts
-index e69de29..4b825dc 100644
---- a/src/routes/user.ts
-+++ b/src/routes/user.ts
-@@ -0,0 +1,8 @@
-+import express from 'express';
-+import { authenticate } from '../middleware/auth.js';
-+
-+const router = express.Router();
-+
-+router.get('/profile', authenticate, (req, res) => {
-+  res.json({ user: req.user });
-+});
-+
-+export default router;
-    `,
-    timestamp: new Date("2024-04-15T10:30:00Z"),
-  },
-  {
-    hash: "e5f6g7h8",
-    message: "Add new feature for user settings and remove deprecated endpoints",
-    diff: `
-diff --git a/src/routes/settings.ts b/src/routes/settings.ts
+    hash: 'a45f60bc837efc68e875e3f897267f31be7498ba',
+    message: 'test commit',
+    diff: `diff --git a/src/App.tsx b/src/App.tsx
+index 9af1638..4bde507 100644
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -10,7 +10,12 @@ function App() {
+   const [isOpen, setIsOpen] = useState(false);
+
+   const toggleOpen = () => {
+-    setIsOpen(!isOpen);
++    if (isOpen) {
++      console.log('Closing...');
++    } else {
++      console.log('Opening...');
++    }
++    setIsOpen(!isOpen);
+   };
+
+   return (
+@@ -30,4 +35,5 @@ function App() {
+       <button onClick={toggleOpen}>Toggle</button>
+       {isOpen && <div>Content is now visible!</div>}
+     </div>
++    <p>New footer message</p>
+   );
+ }
+diff --git a/src/NewComponent.tsx b/src/NewComponent.tsx
 new file mode 100644
 index 0000000..e69de29
 --- /dev/null
-+++ b/src/routes/settings.ts
-@@ -0,0 +1,12 @@
-+import express from 'express';
-+import { authenticate } from '../middleware/auth.js';
++++ b/src/NewComponent.tsx
+@@ -0,0 +1,10 @@
++import React from 'react';
 +
-+const router = express.Router();
-+
-+router.get('/settings', authenticate, (req, res) => {
-+  // Fetch user settings
-+  res.json({ settings: {} });
-+});
-+
-+router.post('/settings', authenticate, (req, res) => {
-+  // Update user settings
-+  res.json({ success: true });
-+});
-+
-+export default router;
-diff --git a/src/routes/deprecated.ts b/src/routes/deprecated.ts
++export default function NewComponent() {
++  return (
++    <div>
++      <h1>New Component</h1>
++      <p>This is a brand new component added to the project.</p>
++    </div>
++  );
++}
+diff --git a/src/unusedFile.tsx b/src/unusedFile.tsx
 deleted file mode 100644
-index e69de29..0000000
---- a/src/routes/deprecated.ts
+index 3b17f6d..0000000
+--- a/src/unusedFile.tsx
 +++ /dev/null
-@@ -1 +0,0 @@
--import express from 'express';
+@@ -1,5 +0,0 @@
+-import React from 'react';
 -
--const router = express.Router();
--
--router.get('/old-endpoint', (req, res) => {
--  res.send('This endpoint is deprecated.');
--});
--
--export default router;
-diff --git a/src/routes/user.ts b/src/routes/user.ts
-index 4b825dc..a7c3e1f 100644
---- a/src/routes/user.ts
-+++ b/src/routes/user.ts
-@@ -10,7 +10,7 @@ router.get('/profile', authenticate, (req, res) => {
- 
- router.post('/updateProfile', authenticate, (req, res) => {
-   // Update user profile logic
--  res.json({ success: true });
-+  res.status(200).json({ message: 'Profile updated successfully' });
- });
- 
- export default router;
-    `,
-    timestamp: new Date("2024-04-16T14:45:00Z"),
-  },
+-export default function UnusedFile() {
+-  return <div>This file is no longer used and has been removed.</div>;
+-}`,
+    timestamp: new Date()
+  }
 ];

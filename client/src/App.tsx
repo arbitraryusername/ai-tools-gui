@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { Collapse } from 'react-collapse';
 import { TextField, Button, CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import { format } from 'date-fns';
-import DiffDisplay from './components/DiffViewer';
 import { GitCommit, sampleGitCommits } from '@ai-tools-gui/shared';
 import './App.css';
+import CommitDiffViewer from './components/DiffViewer';
 
 const darkTheme = createTheme({
   palette: {
@@ -59,6 +59,8 @@ function App() {
         diff: commit.diff,
         timestamp: commit.timestamp,
       }));
+      console.log("GET commits result: ");
+      console.log(JSON.stringify(newCommits));
       setCommits(newCommits);
     }
   };
@@ -103,18 +105,17 @@ function App() {
           <h4>Commits:</h4>
           {commits.map((commit, index) => (
             <div key={commit.hash}>
-              <div onClick={() => setIsOpen(isOpen === index ? null : index)} style={{ cursor: 'pointer' }}>
-                <span style={{ color: 'lightblue' }}>{isOpen === index ? '▼' : '▲'}</span>{' '}
-                <strong>{format(new Date(commit.timestamp), 'PPpp')}</strong>: {commit.message}
-              </div>
-              <Collapse isOpened={isOpen === index}>
-                <DiffDisplay
-                  oldCode={''}
-                  newCode={commit.diff}
-                  title={`Diff for Commit: ${commit.hash}`}
-                />
-              </Collapse>
+            <div
+              onClick={() => setIsOpen(isOpen === index ? null : index)}
+              style={{ cursor: 'pointer', fontWeight: 'bold', marginBottom: '0.5rem' }}
+            >
+              <span style={{ color: 'lightblue' }}>{isOpen === index ? '▼' : '▲'}</span>{' '}
+              <strong>{format(new Date(commit.timestamp), 'PPpp')}</strong>: {commit.message}
             </div>
+            <Collapse isOpened={isOpen === index}>
+              <CommitDiffViewer diff={commit.diff} />
+            </Collapse>
+          </div>
           ))}
         </div>
       )}
