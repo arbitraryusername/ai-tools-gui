@@ -31,6 +31,9 @@ class PromptProcessor {
   
     try {
       const fullPrompt = await this.generateFullPrompt(rawPrompt, sourceAbsolutePath);
+      console.log("DEBUG fullPrompt:\n\n", fullPrompt);
+      return { commits: [] };
+
       const generatedCode = await generateCode(fullPrompt);
   
       await applyChangesToSourceCode(generatedCode, sourceAbsolutePath);

@@ -146,11 +146,10 @@ export async function getSourceFiles(sourceAbsolutePath: string): Promise<{ name
   return await getAllAllowedFiles(sourceAbsolutePath, excludedPaths);
 }
 
-
 /**
  * Recursively collects all excluded paths based on a .gitignore file.
  * @param sourceAbsolutePath - The root directory containing the .gitignore file.
- * @returns A Set of excluded paths relative to the root directory.
+ * @returns A Set of excluded paths relative to the root directory, using forward slashes.
  */
 async function getExcludedPaths(sourceAbsolutePath: string): Promise<Set<string>> {
   // Read and parse the .gitignore file
@@ -169,7 +168,7 @@ async function getExcludedPaths(sourceAbsolutePath: string): Promise<Set<string>
     const entries = await fs.readdir(dir, { withFileTypes: true });
 
     for (const entry of entries) {
-      const entryRelativePath = path.join(relativePath, entry.name);
+      const entryRelativePath = path.posix.join(relativePath, entry.name); // Use path.posix.join for forward slashes
       const fullPath = path.join(dir, entry.name);
 
       // Check if the relative path is ignored
@@ -188,32 +187,39 @@ async function getExcludedPaths(sourceAbsolutePath: string): Promise<Set<string>
 
   // Start scanning from the root directory
   await scanDirectory(sourceAbsolutePath);
-  
+
   console.log("allExcludedPaths: ", allExcludedPaths);
 
   return allExcludedPaths;
 }
 
-async function getAllAllowedFiles(directory: string, excludedPaths: Set<string>): Promise<{ name: string; path: string; children?: any[] }[]> {
+/**
+ * Recursively retrieves all allowed files and directories that are not in the excludedPaths set.
+ * Returns a tree structure with file and directory names and their paths (using forward slashes).
+ * 
+ * @param directory - The root directory to scan.
+ * @param excludedPaths - A set of paths to exclude (relative to the root directory).
+ * @returns A promise resolving to an array representing the directory tree, with paths normalized to use forward slashes.
+ */
+async function getAllAllowedFiles(
+  directory: string,
+  excludedPaths: Set<string>
+): Promise<{ name: string; path: string; children?: any[] }[]> {
   const fileTree: { name: string; path: string; children?: any[] }[] = [];
 
   const entries = await fs.readdir(directory, { withFileTypes: true });
   const tasks = entries.map(async (entry) => {
+    const relativePath = path.posix.join(path.relative(directory, entry.name));
     const fullPath = path.join(directory, entry.name);
-    // const ext = path.extname(entry.name).toLowerCase() as typeof ALLOWED_EXTENSIONS[number];
 
     if (entry.isDirectory()) {
-      // if (!excludedPaths.has(entry.name) && !EXCLUDED_DIRS.has(entry.name as any)) {
-      if (!excludedPaths.has(entry.name)) {
+      if (!excludedPaths.has(relativePath)) {
         const children = await getAllAllowedFiles(fullPath, excludedPaths);
-        fileTree.push({ name: entry.name, path: fullPath, children });
+        fileTree.push({ name: entry.name, path: fullPath.replace(/\\/g, '/'), children });
       }
     } else if (entry.isFile()) {
-      // const isExcludedFile = excludedPaths.has(entry.name) || EXCLUDED_FILES.has(entry.name as any);
-      const isExcludedFile = excludedPaths.has(entry.name);
-      // if (ALLOWED_EXTENSIONS.includes(ext) && !isExcludedFile) {
-      if (!isExcludedFile) {
-        fileTree.push({ name: entry.name, path: fullPath });
+      if (!excludedPaths.has(relativePath)) {
+        fileTree.push({ name: entry.name, path: fullPath.replace(/\\/g, '/') });
       }
     }
   });
