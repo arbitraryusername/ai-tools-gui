@@ -34,7 +34,7 @@ function App() {
         hash: commit.hash,
         message: commit.message,
         diff: commit.diff,
-        timestamp: commit.timestamp.toString(),
+        timestamp: commit.timestamp,
       }));
       setCommits(newCommits.concat(commits));
     }
@@ -58,8 +58,9 @@ function App() {
           value={sourceAbsolutePath}
           onChange={(e) => setSourceAbsolutePath(e.target.value)}
           fullWidth
+          className="local-directory-full-path"
         />
-        <Button variant="contained" onClick={handleStartApp} style={{ backgroundColor: 'lightgreen' }}>Start App</Button>
+        <Button variant="contained" onClick={handleStartApp} style={{ backgroundColor: 'lightgreen', marginRight: '8px' }}>Start App</Button>
         <Button variant="contained" onClick={handleStopApp} style={{ backgroundColor: 'lightcoral' }}>Stop App</Button>
         <TextField
           label="Prompt"

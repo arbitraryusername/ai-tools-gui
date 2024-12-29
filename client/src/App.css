@@ -5,3 +5,7 @@ body {
 .prompt {
   margin: 12px 0!important;
 }
+
+.local-directory-full-path {
+  margin: 8px 0!important;
+}
