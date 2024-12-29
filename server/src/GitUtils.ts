@@ -1,30 +1,51 @@
 import simpleGit, { SimpleGit } from 'simple-git';
 import { GitCommit } from '@ai-tools-gui/shared';
 
+
+/**
+ * Creates a new Git commit in the specified repository.
+ * Formats the returned GitCommit object to align with `getLastCommits`.
+ * @param commitMessage - The commit message.
+ * @param repoAbsolutePath - The absolute path to the Git repository.
+ * @returns A promise that resolves to the created GitCommit object.
+ */
 export async function createGitCommit(
   commitMessage: string,
-  repoAbsolutePath: string,
+  repoAbsolutePath: string
 ): Promise<GitCommit> {
   try {
     const git: SimpleGit = simpleGit(repoAbsolutePath);
 
+    // Stage all changes
     await git.add('./*');
 
+    // Commit changes
     const commitResult = await git.commit(commitMessage);
-    const commitHash = commitResult.commit;
-    const commitDiff = await git.show([commitHash]);
-    const timestamp = new Date((await git.show(['-s', '--format=%ct', commitHash])).trim() + '000');
+    const hash = commitResult.commit;
 
-    console.debug(`Commit ${commitHash} created with message: "${commitMessage}"`);
-    
+    // Retrieve the full diff for the commit
+    const fullCommitOutput = await git.show([hash, '--patch', '--no-color']);
+    const diff = preprocessDiff(fullCommitOutput); // Format diff for react-diff-view
+
+    // Retrieve the commit timestamp
+    const timestamp = new Date(
+      (await git.show(['-s', '--format=%ct', hash])).trim() + '000'
+    );
+
+    console.debug(`Commit ${hash} created with message: "${commitMessage}"`);
+
     return {
-      hash: commitHash,
+      hash,
       message: commitMessage,
-      diff: commitDiff,
-      timestamp
+      diff,
+      timestamp,
     };
   } catch (error) {
-    throw new Error(`Failed to create git commit in repository at "${repoAbsolutePath}". Reason: ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(
+      `Failed to create git commit in repository at "${repoAbsolutePath}". Reason: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
   }
 }
 
