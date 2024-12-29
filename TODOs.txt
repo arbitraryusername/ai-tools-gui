@@ -6,8 +6,6 @@ SERVER
   - getCommits(pathToRepo)
 
 CLIENT 
-- add button to get the commits for the specified repo
-- after each submission show the commit data in some expandable tabbed thingy or something
 - add button to undo the commit (only on most recent commit)
 - allow users to pick which folders/files are included in each submit
 - capture javascript runtime errors and automatically propose solutions 
