@@ -53,3 +53,42 @@ export async function revertLastCommit(
     throw new Error(`Failed to revert the most recent commit in repository at "${repoAbsolutePath}". Reason: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
+
+/**
+ * Fetches the last 5 commits from the target Git repository.
+ * @param repoAbsolutePath The absolute path to the Git repository.
+ * @returns A promise that resolves to an array of the last 5 commits.
+ */
+export async function getLastCommits(
+  repoAbsolutePath: string,
+  count: number,
+): Promise<GitCommit[]> {
+  try {
+    const git: SimpleGit = simpleGit(repoAbsolutePath);
+
+    // Fetch the last 5 commits
+    const log = await git.log({ maxCount: count });
+
+    const commits: GitCommit[] = await Promise.all(
+      log.all.map(async (entry) => {
+        const commitDiff = await git.show([entry.hash]);
+        const timestamp = new Date(entry.date);
+        return {
+          hash: entry.hash,
+          message: entry.message,
+          diff: commitDiff,
+          timestamp,
+        };
+      })
+    );
+
+    console.log(`Fetched the last 5 commits from the repository at "${repoAbsolutePath}"`);
+    return commits;
+  } catch (error) {
+    throw new Error(
+      `Failed to fetch the last 5 commits in repository at "${repoAbsolutePath}". Reason: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
+  }
+}

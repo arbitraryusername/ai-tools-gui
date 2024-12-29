@@ -4,6 +4,7 @@ import { promptProcessor } from './PromptProcessor.js';
 import { Request, Response } from 'express';
 import { 
   ProcessPromptErrorResponse, ProcessPromptResult, ProcessPromptSuccessResponse } from 'types.js';
+import { devServerManager } from './DevServerManager.js';
 
 const app = express();
 const PORT = 3001;
@@ -27,6 +28,21 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   res.status(500).json({ commits: [], error: 'Internal Server Error' });
 });
 
+app.post('/api/startApp', asyncHandler(async (req: Request, res: Response) => {
+  const { sourceAbsolutePath } = req.body;
+  if (!sourceAbsolutePath) {
+    return res.status(400).json({ error: 'Missing "sourceAbsolutePath" parameter.' });
+  }
+
+  await devServerManager.startDevServer(sourceAbsolutePath);
+  res.json({ success: true });
+}));
+
+app.post('/api/stopApp', asyncHandler(async (req: Request, res: Response) => {
+  await devServerManager.stopDevServer();
+  res.json({ success: true });
+}));
+
 app.post('/api/processPrompt', asyncHandler(async (req: Request, res: Response) => {
   console.log("/api/processPrompt -> req.body: ", req.body);
 
@@ -46,4 +62,3 @@ app.post('/api/processPrompt', asyncHandler(async (req: Request, res: Response) 
 
   return res.json(result as ProcessPromptSuccessResponse);
 }));
-

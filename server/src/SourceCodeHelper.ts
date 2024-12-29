@@ -2,6 +2,40 @@ import fs from 'fs/promises';
 import path from 'path';
 import { getFilePathDelimiter } from './AppConfig.js';
 
+ // configure what files get included in the code sent to openai's API
+const ALLOWED_EXTENSIONS = [
+  '.ts',
+  '.tsx',
+  '.js',
+  '.jsx',
+  '.html',
+  '.css',
+  '.scss',
+  '.json',
+  '.yml',
+  '.yaml',
+] as const;
+
+const EXCLUDED_DIRS = new Set([
+  'node_modules',
+  '.git',
+  'dist',
+  'build',
+  '.cache',
+  '.vscode',
+  'public',
+] as const);
+
+const EXCLUDED_FILES = new Set([
+  'package-lock.json',
+  'pnpm-lock.yaml',
+  'eslint.config.js',
+  'tsconfig.json',
+  'vite-env.d.ts',
+  'vite.config.ts',
+] as const);
+
+
 /**
  * Applies code changes by updating or deleting files based on the provided input.
  *
@@ -56,39 +90,6 @@ export async function applyChangesToSourceCode(generatedCodeChanges: string, sou
     }
   }
 }
-
-const ALLOWED_EXTENSIONS = [
-  '.ts',
-  '.tsx',
-  '.js',
-  '.jsx',
-  '.html',
-  '.css',
-  '.scss',
-  '.json',
-  '.yml',
-  '.yaml',
-] as const;
-
-const EXCLUDED_DIRS = new Set([
-  'node_modules',
-  '.git',
-  'dist',
-  'build',
-  '.cache',
-  '.vscode',
-  'public',
-  'server',
-] as const);
-
-const EXCLUDED_FILES = new Set([
-  'package-lock.json',
-  'pnpm-lock.yaml',
-  'eslint.config.js',
-  'tsconfig.json',
-  'vite-env.d.ts',
-  'vite.config.ts',
-] as const);
 
 const FILE_PROCESSING_CONCURRENCY = 10;
 
