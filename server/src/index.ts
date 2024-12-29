@@ -56,6 +56,8 @@ app.post('/api/processPrompt', asyncHandler(async (req: Request, res: Response) 
 
   const result: ProcessPromptResult = await promptProcessor.process(prompt, sourceAbsolutePath);
 
+  console.log("/api/processPrompt returning result: ", result)
+
   if ('error' in result) {
     return res.status(500).json(result as ProcessPromptErrorResponse);
   }
