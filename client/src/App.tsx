@@ -103,10 +103,10 @@ function App() {
         <Button variant="contained" onClick={handleStartApp} color="success" sx={{ marginRight: 2 }}>
           Start App
         </Button>
-        <Button variant="contained" onClick={handleStopApp} color="error">
+        <Button variant="contained" onClick={handleStopApp} color="warning" sx={{ marginRight: 2 }}>
           Stop App
         </Button>
-        <Button variant="contained" onClick={handleGetFiles} color="primary" sx={{ marginRight: 2 }}>
+        <Button variant="contained" onClick={handleGetFiles} color="primary">
           Get Files
         </Button>
         <TextField

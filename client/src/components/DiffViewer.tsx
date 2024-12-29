@@ -13,20 +13,26 @@ const CommitDiffViewer: React.FC<CommitDiffViewerProps> = ({ diff, viewType }) =
 
     return (
       <div>
-        {files.map(({ oldPath, newPath, hunks }) => (
-          <div key={newPath || oldPath} style={{ marginBottom: '1rem' }}>
-            <div style={{ width: '100%', borderBottom: '1px solid white', marginBottom: '8px', fontWeight: 'bold' }}>
-              {oldPath === '/dev/null'
-                ? `New File: ${newPath}`
-                : newPath === '/dev/null'
-                ? `Deleted File: ${oldPath}`
-                : `${oldPath} → ${newPath}`}
+        {files.map(({ oldPath, newPath, type, hunks }) => {
+          return (
+            <div key={newPath || oldPath} style={{ marginBottom: '1rem' }}>
+              <div style={{ width: '100%', borderBottom: '1px solid white', marginBottom: '8px', fontWeight: 'bold' }}>
+                {type === 'rename'
+                  ? `Renamed: ${oldPath} → ${newPath}`
+                  : type === 'copy'
+                  ? `Copied: ${oldPath} → ${newPath}`
+                  : oldPath === '/dev/null'
+                  ? `New File: ${newPath}`
+                  : newPath === '/dev/null'
+                  ? `Deleted File: ${oldPath}`
+                  : `${oldPath} → ${newPath}`}
+              </div>
+              <Diff viewType={viewType} hunks={hunks} diffType={type}>
+                {(hunks) => hunks.map((hunk) => <Hunk key={hunk.content} hunk={hunk} />)}
+              </Diff>
             </div>
-            <Diff viewType={viewType} hunks={hunks}>
-              {(hunks) => hunks.map((hunk) => <Hunk key={hunk.content} hunk={hunk} />)}
-            </Diff>
-          </div>
-        ))}
+          );
+        })}
       </div>
     );
   } catch (error) {

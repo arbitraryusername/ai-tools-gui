@@ -1,7 +1,6 @@
 import { getFilePathDelimiter } from './AppConfig.js';
-import { combineFilesIntoString } from './SourceCodeHelper.js';
+import { combineFilesIntoString, applyChangesToSourceCode } from './SourceCodeHelper.js';
 import { generateCode } from './OpenAIAPI.js';
-import { applyChangesToSourceCode } from './SourceCodeHelper.js';
 import { executeCommand } from './ShellUtils.js';
 import { createGitCommit } from './GitUtils.js';
 import { ProcessPromptOptions, ProcessPromptResult } from 'types.js';

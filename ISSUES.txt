@@ -1,0 +1,1 @@
+- BUG: had sceneario where the code returned by openai was only the new code to add, not the entire file, so a lot of the existing code was incorrectly deleted.
