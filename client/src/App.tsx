@@ -2,9 +2,7 @@ import { useState } from 'react'
 import { Collapse } from 'react-collapse';
 import { TextField, Button, CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import { format } from 'date-fns';
-
 import { GitCommit, sampleGitCommits } from '@ai-tools-gui/shared';
-
 import './App.css'
 
 const darkTheme = createTheme({
@@ -42,6 +40,14 @@ function App() {
     }
   };
 
+  const handleStartApp = async () => {
+    await fetch('http://localhost:3001/api/startApp', { method: 'POST' });
+  };
+
+  const handleStopApp = async () => {
+    await fetch('http://localhost:3001/api/stopApp', { method: 'POST' });
+  };
+
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
@@ -64,6 +70,8 @@ function App() {
           className="prompt"
         />
         <Button variant="contained" onClick={handleSubmit}>Submit</Button>
+        <Button variant="contained" onClick={handleStartApp} style={{ backgroundColor: 'lightgreen' }}>Start App</Button>
+        <Button variant="contained" onClick={handleStopApp} style={{ backgroundColor: 'lightcoral' }}>Stop App</Button>
       </div>
       {commits.length > 0 && (
         <div>
