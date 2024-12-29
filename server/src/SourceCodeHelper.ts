@@ -2,6 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { getFilePathDelimiter } from './AppConfig.js';
 import gitignoreParser from 'gitignore-parser';
+import ignore from 'ignore';
 
 // TODO: should I only use the .gitignore file to determine the initial set of disallowed files? 
 // const ALLOWED_EXTENSIONS = [
@@ -145,6 +146,7 @@ export async function getSourceFiles(sourceAbsolutePath: string): Promise<{ name
   return await getAllAllowedFiles(sourceAbsolutePath, excludedPaths);
 }
 
+
 /**
  * Recursively collects all excluded paths based on a .gitignore file.
  * @param sourceAbsolutePath - The root directory containing the .gitignore file.
@@ -153,34 +155,41 @@ export async function getSourceFiles(sourceAbsolutePath: string): Promise<{ name
 async function getExcludedPaths(sourceAbsolutePath: string): Promise<Set<string>> {
   // Read and parse the .gitignore file
   const gitignoreContent = await fs.readFile(path.join(sourceAbsolutePath, '.gitignore'), 'utf-8');
-  const parser = gitignoreParser.compile(gitignoreContent);
+  const ignoreParser = ignore();
+  ignoreParser.add(gitignoreContent);
+
   const allExcludedPaths: Set<string> = new Set();
 
   /**
-   * Recursively scan directories and check against the .gitignore parser.
-   * @param dir - Current directory to scan.
-   * @param relativePath - Relative path from the source root.
+   * Recursively scans a directory to find excluded paths.
+   * @param dir - The directory to scan.
+   * @param relativePath - The path relative to the source root.
    */
-  async function scanDirectory(dir: string, relativePath: string) {
+  async function scanDirectory(dir: string, relativePath = '') {
     const entries = await fs.readdir(dir, { withFileTypes: true });
 
     for (const entry of entries) {
       const entryRelativePath = path.join(relativePath, entry.name);
       const fullPath = path.join(dir, entry.name);
 
-      if (parser.denies(entryRelativePath)) {
+      // Check if the relative path is ignored
+      if (ignoreParser.ignores(entryRelativePath)) {
         allExcludedPaths.add(entryRelativePath);
+        // Skip further processing of ignored directories
+        if (entry.isDirectory()) continue;
       }
 
-      // Recurse into subdirectories
-      if (entry.isDirectory() && !parser.denies(entryRelativePath)) {
+      // Recursively scan subdirectories
+      if (entry.isDirectory()) {
         await scanDirectory(fullPath, entryRelativePath);
       }
     }
   }
 
-  // Start the recursive scan from the source root
-  await scanDirectory(sourceAbsolutePath, '');
+  // Start scanning from the root directory
+  await scanDirectory(sourceAbsolutePath);
+  
+  console.log("allExcludedPaths: ", allExcludedPaths);
 
   return allExcludedPaths;
 }
