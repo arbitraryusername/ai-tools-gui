@@ -59,6 +59,8 @@ function App() {
           onChange={(e) => setSourceAbsolutePath(e.target.value)}
           fullWidth
         />
+        <Button variant="contained" onClick={handleStartApp} style={{ backgroundColor: 'lightgreen' }}>Start App</Button>
+        <Button variant="contained" onClick={handleStopApp} style={{ backgroundColor: 'lightcoral' }}>Stop App</Button>
         <TextField
           label="Prompt"
           variant="outlined"
@@ -70,8 +72,6 @@ function App() {
           className="prompt"
         />
         <Button variant="contained" onClick={handleSubmit}>Submit</Button>
-        <Button variant="contained" onClick={handleStartApp} style={{ backgroundColor: 'lightgreen' }}>Start App</Button>
-        <Button variant="contained" onClick={handleStopApp} style={{ backgroundColor: 'lightcoral' }}>Stop App</Button>
       </div>
       {commits.length > 0 && (
         <div>
