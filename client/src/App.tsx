@@ -25,7 +25,7 @@ function App() {
   const [isOpen, setIsOpen] = useState<number | null>(null);
   const [showSplit, setShowSplit] = useState(false);
   const viewType: ViewType = showSplit ? 'split' : 'unified';
-
+  
   const handleSubmit = async () => {
     const response = await fetch('http://localhost:3001/api/processPrompt', {
       method: 'POST',
@@ -70,8 +70,7 @@ function App() {
         diff: commit.diff,
         timestamp: commit.timestamp,
       }));
-      console.log("GET commits result: ");
-      console.log(newCommits);
+      console.log("GET api/commits DONE");
       setCommits(newCommits);
     }
   };
@@ -83,14 +82,14 @@ function App() {
     }
     const response = await fetch(`http://localhost:3001/api/sourceFiles?sourceAbsolutePath=${encodeURIComponent(sourceAbsolutePath)}`);
     const files = await response.json();
-    console.log("GET files result: ", JSON.stringify(files));
+    console.log("GET api/sourceFiles DONE");
     setFiles(files);
-    // const treeData = convertToCheckboxTreeData(files);
-    // console.log("treeData: ", treeData);
   };
 
   useEffect(() => {
-    handleGetCommits();
+    // automatically call these functions on component
+    handleGetCommits(); 
+    handleGetFiles();
   }, []);
 
   return (
@@ -116,7 +115,7 @@ function App() {
         </Button>
         {files.length > 0 && (
           <div style={{ marginTop: "24px" }}>
-            <Typography>File to Include with Prompt</Typography>
+            <Typography variant='h6'>File to Include with Prompt</Typography>
             <DirectoryTree files={files} />
           </div>
         )}
