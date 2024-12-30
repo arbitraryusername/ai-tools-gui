@@ -71,7 +71,7 @@ export async function applyChangesToSourceCode(generatedCodeChanges: string, sou
  * @returns A string containing file paths and their contents.
  */
 export async function combineFilesIntoString(sourceAbsolutePath: string): Promise<string> {
-  const delimiter = '<<<FILE_DELIMITER>>>';
+  const delimiter = getFilePathDelimiter();
   let combinedContent = '';
 
   try {

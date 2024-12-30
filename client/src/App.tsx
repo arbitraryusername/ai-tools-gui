@@ -7,6 +7,7 @@ import type { ViewType } from 'react-diff-view';
 
 import { GitCommit, sampleGitCommits } from '@ai-tools-gui/shared';
 import CommitDiffViewer from './components/DiffViewer';
+import DirectoryTree from "./components/DirectoryTree"; 
 import './App.css';
 
 const darkTheme = createTheme({
@@ -20,6 +21,7 @@ function App() {
   const [sourceAbsolutePath, setSourceAbsolutePath] = useState(defaultPath);
   const [prompt, setPrompt] = useState('');
   const [commits, setCommits] = useState<GitCommit[]>(sampleGitCommits);
+  const [files, setFiles] = useState([]); 
   const [isOpen, setIsOpen] = useState<number | null>(null);
   const [showSplit, setShowSplit] = useState(false);
   const viewType: ViewType = showSplit ? 'split' : 'unified';
@@ -81,7 +83,10 @@ function App() {
     }
     const response = await fetch(`http://localhost:3001/api/sourceFiles?sourceAbsolutePath=${encodeURIComponent(sourceAbsolutePath)}`);
     const files = await response.json();
-    console.log("GET files result: ", files);
+    console.log("GET files result: ", JSON.stringify(files));
+    setFiles(files);
+    // const treeData = convertToCheckboxTreeData(files);
+    // console.log("treeData: ", treeData);
   };
 
   useEffect(() => {
@@ -109,6 +114,12 @@ function App() {
         <Button variant="contained" onClick={handleGetFiles} color="primary">
           Get Files
         </Button>
+        {files.length > 0 && (
+          <div style={{ marginTop: "24px" }}>
+            <Typography>File to Include with Prompt</Typography>
+            <DirectoryTree files={files} />
+          </div>
+        )}
         <TextField
           label="Prompt"
           variant="outlined"
