@@ -115,7 +115,7 @@ function App() {
         </Button>
         {files.length > 0 && (
           <div style={{ marginTop: "24px" }}>
-            <Typography variant='h6'>File to Include with Prompt</Typography>
+            <Typography variant='h6'>Files to Include with Prompt</Typography>
             <DirectoryTree files={files} />
           </div>
         )}

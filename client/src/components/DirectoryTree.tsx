@@ -13,7 +13,7 @@ import {
   SelectAll as SelectAllIcon,
   Deselect as DeselectIcon, 
 } from "@mui/icons-material";
-import { Box, IconButton } from "@mui/material";
+import { Box, IconButton, Typography } from "@mui/material";
 
 type FilePayload = { name: string; path: string };
 
@@ -93,7 +93,7 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({ files }) => {
 
   return (
     <Box>
-      <Box display="flex" alignItems="left" marginBottom={2}>
+      <Box display="flex" alignItems="left" marginBottom={1}>
         <IconButton onClick={handleSelectAll} color="primary">
           <span style={{ fontSize: '0.8em', marginRight: '4px' }}>All</span>
           <SelectAllIcon />
@@ -102,6 +102,9 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({ files }) => {
           <span style={{ fontSize: '0.8em', marginRight: '4px' }}>None</span>
           <DeselectIcon />
         </IconButton>
+        <Typography variant="body1" sx={{ marginLeft: 2, paddingTop: 1 }}>
+          {`Files Selected: ${checked.length}`}
+        </Typography>
       </Box>
       <CheckboxTree
         nodes={treeData}
