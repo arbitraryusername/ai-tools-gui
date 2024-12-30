@@ -1,2 +1,3 @@
 - BUG: the code returned by openai was only the new code to add, not the entire file, so a lot of the existing code was incorrectly deleted.
 - BUG: the code returned by openai added a @types package that didn't exist
+- BUG: GET commits is called twice when the page loads

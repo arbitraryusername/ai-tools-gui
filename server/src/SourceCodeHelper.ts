@@ -37,7 +37,7 @@ import ignore from 'ignore';
 //   'vite.config.ts',
 // ] as const);
 
-const FILE_PROCESSING_CONCURRENCY = 20;
+const FILE_PROCESSING_CONCURRENCY = 10;
 
 interface FileProcessingError extends Error {
   path?: string;
@@ -106,10 +106,10 @@ export async function combineFilesIntoString(
 
   try {
     const excludedPaths = await getExcludedPaths(sourceAbsolutePath);
-    const allFiles = await getAllAllowedFiles(sourceAbsolutePath, excludedPaths);
+    const allowedFiles = await getAllAllowedFiles(sourceAbsolutePath, excludedPaths);
 
-    for (let i = 0; i < allFiles.length; i += FILE_PROCESSING_CONCURRENCY) {
-      const chunk = allFiles.slice(i, i + FILE_PROCESSING_CONCURRENCY);
+    for (let i = 0; i < allowedFiles.length; i += FILE_PROCESSING_CONCURRENCY) {
+      const chunk = allowedFiles.slice(i, i + FILE_PROCESSING_CONCURRENCY);
       const readTasks = chunk.map(async (filePath) => {
         try {
           const fileContents = await fs.readFile(filePath.path, 'utf-8');
@@ -146,6 +146,19 @@ export async function getSourceFiles(sourceAbsolutePath: string): Promise<{ name
   return await getAllAllowedFiles(sourceAbsolutePath, excludedPaths);
 }
 
+// ignore these regardless of what the .gitignore says
+const ignoredFolders = [
+  '.git',
+  'node_modules',
+];
+
+// TODO: ues this list
+const ignoredFiles = [
+  'LICENSE',
+  'package-lock.json',
+  'pnpm-lock.yaml',
+]
+
 /**
  * Recursively collects all excluded paths based on a .gitignore file.
  * @param sourceAbsolutePath - The root directory containing the .gitignore file.
@@ -172,7 +185,7 @@ async function getExcludedPaths(sourceAbsolutePath: string): Promise<Set<string>
       const fullPath = path.join(dir, entry.name);
 
       // Check if the relative path is ignored
-      if (ignoreParser.ignores(entryRelativePath)) {
+      if (ignoreParser.ignores(entryRelativePath) || ignoredFolders.includes(entryRelativePath)) {
         allExcludedPaths.add(entryRelativePath);
         // Skip further processing of ignored directories
         if (entry.isDirectory()) continue;
@@ -194,36 +207,41 @@ async function getExcludedPaths(sourceAbsolutePath: string): Promise<Set<string>
 }
 
 /**
- * Recursively retrieves all allowed files and directories that are not in the excludedPaths set.
- * Returns a tree structure with file and directory names and their paths (using forward slashes).
+ * Recursively retrieves all allowed files that are not in the excludedPaths set.
+ * Returns a flat array of file objects with relative paths normalized to use forward slashes.
  * 
  * @param directory - The root directory to scan.
  * @param excludedPaths - A set of paths to exclude (relative to the root directory).
- * @returns A promise resolving to an array representing the directory tree, with paths normalized to use forward slashes.
+ * @param rootDir - The root directory used for calculating relative paths.
+ * @returns A promise resolving to an array of files with names and normalized paths.
  */
 async function getAllAllowedFiles(
   directory: string,
-  excludedPaths: Set<string>
-): Promise<{ name: string; path: string; children?: any[] }[]> {
-  const fileTree: { name: string; path: string; children?: any[] }[] = [];
+  excludedPaths: Set<string>,
+  rootDir: string = directory
+): Promise<{ name: string; path: string }[]> {
+  const allowedFiles: { name: string; path: string }[] = [];
 
   const entries = await fs.readdir(directory, { withFileTypes: true });
-  const tasks = entries.map(async (entry) => {
-    const relativePath = path.posix.join(path.relative(directory, entry.name));
+
+  for (const entry of entries) {
     const fullPath = path.join(directory, entry.name);
+    const relativePath = path.posix.join(path.relative(rootDir, fullPath).split(path.sep).join('/'));
 
-    if (entry.isDirectory()) {
-      if (!excludedPaths.has(relativePath)) {
-        const children = await getAllAllowedFiles(fullPath, excludedPaths);
-        fileTree.push({ name: entry.name, path: fullPath.replace(/\\/g, '/'), children });
-      }
-    } else if (entry.isFile()) {
-      if (!excludedPaths.has(relativePath)) {
-        fileTree.push({ name: entry.name, path: fullPath.replace(/\\/g, '/') });
-      }
+    if (excludedPaths.has(relativePath)) {
+      // Skip excluded files and directories
+      continue;
     }
-  });
 
-  await Promise.all(tasks);
-  return fileTree;
+    if (entry.isFile()) {
+      // Add files to the result
+      allowedFiles.push({ name: entry.name, path: relativePath });
+    } else if (entry.isDirectory()) {
+      // Recurse into subdirectories
+      const children = await getAllAllowedFiles(fullPath, excludedPaths, rootDir);
+      allowedFiles.push(...children);
+    }
+  }
+
+  return allowedFiles;
 }
