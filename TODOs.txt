@@ -3,12 +3,15 @@ SERVER
 - add some code guidelines to prompt, like "ensure business rules and assumptions are not duplicated"
 - add endpoints to express server:
   - revertLastCommit()
-  - getCommits(pathToRepo)
 
 CLIENT 
 - add button to undo the commit (only on most recent commit)
 - allow users to pick which folders/files are included in each submit
-- capture javascript runtime errors and automatically propose solutions 
+- capture javascript runtime errors and automatically propose solutions
+- add ability to define a prompt context, where the user can select specific commits,
+  which will update the selected files list to be files only from those commits.
+  based on these selected commits, prompt recommendations can be generated for next steps
+  as well as suggestions for code improvements
 - could have toggle that explains the changes, but this is just nice to have at this point
 - tabs of repos along the left side, tabs of tasks for the current repo along the top
 - each task is like a new thread, meaning we keep context of previous messages

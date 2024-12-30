@@ -176,7 +176,7 @@ function App() {
           </Box>
 
           {/* Right Column */}
-          <Box flex="1" padding={1} overflow="auto">
+          <Box flex="1" overflow="auto">
             <Box display="flex" justifyContent="space-between" alignItems="left">
               <Typography sx={{ paddingTop: 1 }}>Files to include in Prompt</Typography>
               <IconButton onClick={handleGetFiles} color="primary">
@@ -189,7 +189,7 @@ function App() {
 
         {/* Bottom Section */}
         <Box flex="1" overflow="auto" padding={2} sx={{ marginTop: 1 }}>
-          <Box display="flex" justifyContent="space-between" alignItems="center" marginBottom={2}>
+          <Box display="flex" justifyContent="space-between" alignItems="center" marginBottom={1}>
             <Typography variant="h6">Commits</Typography>
             <Box display="flex" alignItems="center">
               <FormControlLabel
@@ -208,7 +208,7 @@ function App() {
             </Box>
           </Box>
           {commits.map((commit, index) => (
-            <Box key={commit.hash} marginBottom={1}>
+            <Box key={commit.hash}>
               <Box
                 onClick={() => setIsOpen(isOpen === index ? null : index)}
                 sx={{
