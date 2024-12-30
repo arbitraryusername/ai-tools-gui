@@ -1,41 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { getFilePathDelimiter } from './AppConfig.js';
-import gitignoreParser from 'gitignore-parser';
 import ignore from 'ignore';
-
-// TODO: should I only use the .gitignore file to determine the initial set of disallowed files? 
-// const ALLOWED_EXTENSIONS = [
-//   '.ts',
-//   '.tsx',
-//   '.js',
-//   '.jsx',
-//   '.html',
-//   '.css',
-//   '.scss',
-//   '.json',
-//   '.yml',
-//   '.yaml',
-// ] as const;
-
-// const EXCLUDED_DIRS = new Set([
-//   'node_modules',
-//   '.git',
-//   'dist',
-//   'build',
-//   '.cache',
-//   '.vscode',
-//   'public',
-// ] as const);
-
-// const EXCLUDED_FILES = new Set([
-//   'package-lock.json',
-//   'pnpm-lock.yaml',
-//   'eslint.config.js',
-//   'tsconfig.json',
-//   'vite-env.d.ts',
-//   'vite.config.ts',
-// ] as const);
 
 const FILE_PROCESSING_CONCURRENCY = 10;
 
@@ -98,11 +64,15 @@ export async function applyChangesToSourceCode(generatedCodeChanges: string, sou
   }
 }
 
-export async function combineFilesIntoString(
-  sourceAbsolutePath: string
-): Promise<string> {
+/**
+ * Combines content from all allowed files into a single string, separated by delimiters.
+ * 
+ * @param sourceAbsolutePath - The root directory.
+ * @returns A string containing file paths and their contents.
+ */
+export async function combineFilesIntoString(sourceAbsolutePath: string): Promise<string> {
+  const delimiter = '<<<FILE_DELIMITER>>>';
   let combinedContent = '';
-  const delimiter = getFilePathDelimiter();
 
   try {
     const excludedPaths = await getExcludedPaths(sourceAbsolutePath);
@@ -110,18 +80,13 @@ export async function combineFilesIntoString(
 
     for (let i = 0; i < allowedFiles.length; i += FILE_PROCESSING_CONCURRENCY) {
       const chunk = allowedFiles.slice(i, i + FILE_PROCESSING_CONCURRENCY);
-      const readTasks = chunk.map(async (filePath) => {
+      const readTasks = chunk.map(async (file) => {
         try {
-          const fileContents = await fs.readFile(filePath.path, 'utf-8');
-          let relativePath = path.relative(sourceAbsolutePath, filePath.path);
-          relativePath = relativePath.split(path.sep).join('/');
-
-          return `\n${delimiter}${relativePath}\n${fileContents}`;
+          const fileContents = await fs.readFile(path.join(sourceAbsolutePath, file.path), 'utf-8');
+          return `\n${delimiter}${file.path}\n${fileContents}`;
         } catch (error) {
-          const processingError: FileProcessingError = new Error(
-            `Error reading file: ${filePath}`
-          );
-          processingError.path = filePath.path;
+          const processingError: FileProcessingError = new Error(`Error reading file: ${file.path}`);
+          processingError.path = file.path;
           processingError.cause = error;
           throw processingError;
         }
@@ -131,9 +96,7 @@ export async function combineFilesIntoString(
       combinedContent += results.join('');
     }
   } catch (error) {
-    const processingError: FileProcessingError = new Error(
-      'Error combining files into string'
-    );
+    const processingError: FileProcessingError = new Error('Error combining files into string');
     processingError.cause = error;
     throw processingError;
   }
@@ -152,12 +115,11 @@ const ignoredFolders = [
   'node_modules',
 ];
 
-// TODO: ues this list
 const ignoredFiles = [
   'LICENSE',
   'package-lock.json',
   'pnpm-lock.yaml',
-]
+];
 
 /**
  * Recursively collects all excluded paths based on a .gitignore file.
@@ -185,7 +147,11 @@ async function getExcludedPaths(sourceAbsolutePath: string): Promise<Set<string>
       const fullPath = path.join(dir, entry.name);
 
       // Check if the relative path is ignored
-      if (ignoreParser.ignores(entryRelativePath) || ignoredFolders.includes(entryRelativePath)) {
+      if (
+        ignoreParser.ignores(entryRelativePath) || 
+        ignoredFolders.includes(entryRelativePath) ||
+        ignoredFiles.includes(entry.name)
+      ) {
         allExcludedPaths.add(entryRelativePath);
         // Skip further processing of ignored directories
         if (entry.isDirectory()) continue;
