@@ -104,5 +104,3 @@ app.post('/api/revertLastCommit', asyncHandler(async (req: Request, res: Respons
     return res.status(500).json({ error: `Rever commit failed: ${error.message}` });
   }
 }));
-
-// TODO: revert this commit adding this line
