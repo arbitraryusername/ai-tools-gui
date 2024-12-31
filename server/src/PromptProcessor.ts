@@ -88,7 +88,6 @@ It is critially important that you include the entire file's content in your res
 Do not give other output except for that, meaning no explanation or markup.
 Existing project dependencies are provided. Reuse existing dependencies when applicable.
 Add or remove dependencies to the package.json when needed, and provide the entire file in the response with only the needed changes.
-If there is a corresponding @types package for the added package, then also include this @types package in the package.json file.
 NEVER put comments in JSON files. Do not add comments in the code. Do not remove existing comments.
 If a file should be removed entirely, include ${this.delimiter}file_path on its own line, followed by a blank line.`;
 
