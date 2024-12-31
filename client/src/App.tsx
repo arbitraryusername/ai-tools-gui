@@ -14,6 +14,7 @@ import {
   IconButton,
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import HistoryIcon from '@mui/icons-material/History';
 import type { ViewType } from 'react-diff-view';
 
 import { GitCommit } from '@ai-tools-gui/shared';
@@ -62,13 +63,15 @@ function App() {
     }
   };
 
-  // const handleStartApp = async () => {
-  //   await fetch('http://localhost:3001/api/startApp', { method: 'POST' });
-  // };
-
-  // const handleStopApp = async () => {
-  //   await fetch('http://localhost:3001/api/stopApp', { method: 'POST' });
-  // };
+  const handleRevertCommit = async () => {
+    const response = await fetch('http://localhost:3001/api/revertCommit', {
+      method: 'GET',
+    });
+    const success = await response.json();
+    if (success) {
+      await handleGetCommits();
+    }
+  };
 
   const handleGetCommits = async () => {
     const response = await fetch(
@@ -143,20 +146,6 @@ function App() {
               >
                 Load Repo
               </Button>
-              {/* <Button
-                variant="contained"
-                onClick={handleStartApp}
-                color="success"
-              >
-                Start App
-              </Button>
-              <Button
-                variant="contained"
-                onClick={handleStopApp}
-                color="warning"
-              >
-                Stop App
-              </Button> */}
             </Box>
             <TextField
               label="Prompt"
@@ -210,6 +199,9 @@ function App() {
               />
               <IconButton onClick={handleGetCommits} color="primary">
                 <RefreshIcon />
+              </IconButton>
+              <IconButton onClick={handleRevertCommit} color="primary">
+                <HistoryIcon />
               </IconButton>
             </Box>
           </Box>

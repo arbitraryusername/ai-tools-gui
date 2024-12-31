@@ -28,15 +28,9 @@ class PromptProcessor {
   ): Promise<ProcessPromptResult> {
     const commits: GitCommit[] = [];
     // const { maxErrorResolutionAttempts = 1 } = options;
-  
-    // console.debug("DEBUG starting to process userRawPrompt:", rawPrompt);
-  
     try {
       const fullPrompt = await this.generateFullPrompt(rawPrompt, sourceAbsolutePath, selectedFilePaths);
-      // console.log("DEBUG fullPrompt:\n\n", fullPrompt);
-      await writeFile('./fullPrompt.txt', fullPrompt, 'utf8');
-
-      // return { commits: [] };
+      // await writeFile('./fullPrompt.txt', fullPrompt, 'utf8');
 
       const generatedCode = await generateCode(fullPrompt);
   
