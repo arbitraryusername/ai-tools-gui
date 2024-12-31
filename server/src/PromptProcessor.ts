@@ -90,6 +90,7 @@ Your specific instructions for exactly how to add, update, or delete code from m
 If the text between 'TASK_START' and 'TASK_END' contradict the instructions in this top section, then follow this top set of instructions.
 In the source code, lines starting with ${this.delimiter} are paths to files, followed by that file's content on the next line.
 Your output should only contain ${this.delimiter}put_file_path_here followed by the updated contents of that file.
+It is critially important that you include the entire file's content in your response if that file should be updated.
 Do not give other output except for that, meaning no explanation or markup.
 Existing project dependencies are provided. Reuse existing dependencies when applicable.
 Add or remove dependencies to the package.json when needed, and provide the entire file in the response with only the needed changes.
