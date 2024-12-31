@@ -17,7 +17,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import type { ViewType } from 'react-diff-view';
 
 import { GitCommit } from '@ai-tools-gui/shared';
-import CommitDiffViewer from './components/DiffViewer';
+import CommitDiffViewer from './components/CommitDiffViewer';
 import DirectoryTree from './components/DirectoryTree';
 import './App.css';
 
@@ -28,13 +28,16 @@ const darkTheme = createTheme({
 });
 
 function App() {
-  const defaultPath = ''; // 'C:/Users/craig/dev/ai-tools-gui';
+  const defaultPath = 'C:/Users/craig/dev/ai-tools-gui';
+  
   const [sourceAbsolutePath, setSourceAbsolutePath] = useState(defaultPath);
   const [prompt, setPrompt] = useState('');
   const [commits, setCommits] = useState<GitCommit[]>([]);
   const [files, setFiles] = useState([]);
   const [isOpen, setIsOpen] = useState<number | null>(null);
   const [showSplit, setShowSplit] = useState(true);
+  const [selectedFilePaths, setSelectedFilePaths] = useState<string[]>([]);
+
   const viewType: ViewType = showSplit ? 'split' : 'unified';
 
   const handleSubmit = async () => {
@@ -43,7 +46,7 @@ function App() {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ prompt, sourceAbsolutePath }),
+      body: JSON.stringify({ prompt, sourceAbsolutePath, selectedFilePaths }),
     });
 
     const data = await response.json();
@@ -59,13 +62,13 @@ function App() {
     }
   };
 
-  const handleStartApp = async () => {
-    await fetch('http://localhost:3001/api/startApp', { method: 'POST' });
-  };
+  // const handleStartApp = async () => {
+  //   await fetch('http://localhost:3001/api/startApp', { method: 'POST' });
+  // };
 
-  const handleStopApp = async () => {
-    await fetch('http://localhost:3001/api/stopApp', { method: 'POST' });
-  };
+  // const handleStopApp = async () => {
+  //   await fetch('http://localhost:3001/api/stopApp', { method: 'POST' });
+  // };
 
   const handleGetCommits = async () => {
     const response = await fetch(
@@ -183,7 +186,10 @@ function App() {
                 <RefreshIcon />
               </IconButton>
             </Box>
-            {files.length > 0 && <DirectoryTree files={files} />}
+            {
+              files.length > 0 && 
+              <DirectoryTree files={files} onCheckedChange={(checked) => setSelectedFilePaths(checked)} />
+            }
           </Box>
         </Box>
 

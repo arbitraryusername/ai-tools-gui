@@ -22,16 +22,17 @@ class PromptProcessor {
   async process(
     rawPrompt: string,
     sourceAbsolutePath: string,
+    selectedFilePaths: string[],
     options: ProcessPromptOptions = {}
   ): Promise<ProcessPromptResult> {
     const commits: GitCommit[] = [];
     const { maxErrorResolutionAttempts = 1 } = options;
   
-    console.debug("DEBUG starting to process userRawPrompt:", rawPrompt);
+    // console.debug("DEBUG starting to process userRawPrompt:", rawPrompt);
   
     try {
-      const fullPrompt = await this.generateFullPrompt(rawPrompt, sourceAbsolutePath);
-      console.log("DEBUG fullPrompt:\n\n", fullPrompt);
+      const fullPrompt = await this.generateFullPrompt(rawPrompt, sourceAbsolutePath, selectedFilePaths);
+      // console.log("DEBUG fullPrompt:\n\n", fullPrompt);
       return { commits: [] };
 
       const generatedCode = await generateCode(fullPrompt);
@@ -75,7 +76,11 @@ class PromptProcessor {
     }
   }
 
-  private async generateFullPrompt(userRawPrompt: string, sourceAbsolutePath: string): Promise<string> {
+  private async generateFullPrompt(
+    userRawPrompt: string,
+    sourceAbsolutePath: string,
+    selectedFilePaths: string[],
+  ): Promise<string> {
     const promptInstructions = `
 Source code for my project is given below between 'SOURCE_START' and 'SOURCE_END'.
 Your specific instructions for exactly how to add, update, or delete code from my project's source code is between 'TASK_START' and 'TASK_END'. 
@@ -88,70 +93,70 @@ Do not give other output except for that, meaning no explanation or markup.
 NEVER put comments in JSON files. Do not add single line comments in the code. Do not remove existing comments.
 If a file should be removed entirely, include ${this.delimiter}file_path line with a blank line following.`;
 
-    const projectContentString = await combineFilesIntoString(sourceAbsolutePath);
+    const projectContentString = await combineFilesIntoString(sourceAbsolutePath, selectedFilePaths);
 
     return `${promptInstructions}\nTASK_START\n${userRawPrompt}]\nTASK_END\nSOURCE_START\n${projectContentString}\nSOURCE_END`;
   }
 
-  private async handleBuildProcess(
-    userRawPrompt: string,
-    sourceAbsolutePath: string,
-    maxAttempts: number
-  ): Promise<GitCommit[]> {
-    let attempts = 0;
-    const commits: GitCommit[] = [];
+  // private async handleBuildProcess(
+  //   userRawPrompt: string,
+  //   sourceAbsolutePath: string,
+  //   maxAttempts: number
+  // ): Promise<GitCommit[]> {
+  //   let attempts = 0;
+  //   const commits: GitCommit[] = [];
 
-    while (attempts < maxAttempts) {
-      try {
-        await executeCommand(BUILD_COMMAND, sourceAbsolutePath);
-        return []; // no new commits to make
-      } catch (error) {
-        attempts++;
-        console.error(`Build attempt ${attempts} failed:`, error);
+  //   while (attempts < maxAttempts) {
+  //     try {
+  //       await executeCommand(BUILD_COMMAND, sourceAbsolutePath);
+  //       return []; // no new commits to make
+  //     } catch (error) {
+  //       attempts++;
+  //       console.error(`Build attempt ${attempts} failed:`, error);
 
-        if (attempts < maxAttempts) {
-          await this.attemptBuildErrorResolution(
-            error instanceof Error ? error.message : String(error),
-            sourceAbsolutePath
-          );
+  //       if (attempts < maxAttempts) {
+  //         await this.attemptBuildErrorResolution(
+  //           error instanceof Error ? error.message : String(error),
+  //           sourceAbsolutePath
+  //         );
           
-          const errorResolutionCommit = await createGitCommit(
-            `Attempt ${attempts} to auto resolve build error from previous commit: ${userRawPrompt}`,
-            sourceAbsolutePath
-          );
-          commits.push(errorResolutionCommit);
-        } else {
-          throw new Error(`Build failed after ${maxAttempts} attempts`);
-        }
-      }
-    }
+  //         const errorResolutionCommit = await createGitCommit(
+  //           `Attempt ${attempts} to auto resolve build error from previous commit: ${userRawPrompt}`,
+  //           sourceAbsolutePath
+  //         );
+  //         commits.push(errorResolutionCommit);
+  //       } else {
+  //         throw new Error(`Build failed after ${maxAttempts} attempts`);
+  //       }
+  //     }
+  //   }
 
-    return commits;
-  }
+  //   return commits;
+  // }
 
-  private async attemptBuildErrorResolution(buildCommandOutput: string, sourceAbsolutePath: string): Promise<void> {
-    const errorResolutionPrompt = this.generateErrorResolutionPrompt(buildCommandOutput, sourceAbsolutePath);
+//   private async attemptBuildErrorResolution(buildCommandOutput: string, sourceAbsolutePath: string): Promise<void> {
+//     const errorResolutionPrompt = this.generateErrorResolutionPrompt(buildCommandOutput, sourceAbsolutePath);
     
-    console.log("DEBUG errorResolutionPrompt:", errorResolutionPrompt);
+//     console.log("DEBUG errorResolutionPrompt:", errorResolutionPrompt);
 
-    const generatedCodeToFixBuildErrors = await generateCode(errorResolutionPrompt);
-    await applyChangesToSourceCode(generatedCodeToFixBuildErrors, sourceAbsolutePath);
-  }
+//     const generatedCodeToFixBuildErrors = await generateCode(errorResolutionPrompt);
+//     await applyChangesToSourceCode(generatedCodeToFixBuildErrors, sourceAbsolutePath);
+//   }
 
-  private generateErrorResolutionPrompt(buildCommandOutput: string, sourceAbsolutePath: string): string {
-    const errorResolutionPromptInstructions = `
-After running command "${BUILD_COMMAND}" I get the error between 'OUTPUT_START' and 'OUTPUT_END' below:
-OUTPUT_START\n${buildCommandOutput}\nOUTPUT_END
-Update my project source code to fix these errors.
-My project source code is given below between 'SOURCE_START' and 'SOURCE_END'.
-In the source code, lines starting with ${this.delimiter} are paths to files, followed by that file's content on the next line.
-Your output should only contain ${this.delimiter}put_file_path_here followed by the updated contents of that file.
-Do not give other output except for that, meaning no explanation or markup. Do not add or remove any comments in the code.`;
+//   private generateErrorResolutionPrompt(buildCommandOutput: string, sourceAbsolutePath: string): string {
+//     const errorResolutionPromptInstructions = `
+// After running command "${BUILD_COMMAND}" I get the error between 'OUTPUT_START' and 'OUTPUT_END' below:
+// OUTPUT_START\n${buildCommandOutput}\nOUTPUT_END
+// Update my project source code to fix these errors.
+// My project source code is given below between 'SOURCE_START' and 'SOURCE_END'.
+// In the source code, lines starting with ${this.delimiter} are paths to files, followed by that file's content on the next line.
+// Your output should only contain ${this.delimiter}put_file_path_here followed by the updated contents of that file.
+// Do not give other output except for that, meaning no explanation or markup. Do not add or remove any comments in the code.`;
 
-    const projectContentString = combineFilesIntoString(sourceAbsolutePath);
+//     const projectContentString = combineFilesIntoString(sourceAbsolutePath);
 
-    return `${errorResolutionPromptInstructions}\nSOURCE_START\n${projectContentString}\nSOURCE_END`;
-  }
+//     return `${errorResolutionPromptInstructions}\nSOURCE_START\n${projectContentString}\nSOURCE_END`;
+//   }
 
   private containsPackageJsonChanges(input: string): boolean {
     const lines = input.split(/\r?\n/);

@@ -29,23 +29,25 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   res.status(500).json({ commits: [], error: 'Internal Server Error' });
 });
 
-app.post('/api/startApp', asyncHandler(async (req: Request, res: Response) => {
-  const { sourceAbsolutePath } = req.body;
-  if (!sourceAbsolutePath) {
-    return res.status(400).json({ error: 'Missing "sourceAbsolutePath" parameter.' });
-  }
+// app.post('/api/startApp', asyncHandler(async (req: Request, res: Response) => {
+//   const { sourceAbsolutePath } = req.body;
+//   if (!sourceAbsolutePath) {
+//     return res.status(400).json({ error: 'Missing "sourceAbsolutePath" parameter.' });
+//   }
 
-  await devServerManager.startDevServer(sourceAbsolutePath);
-  res.json({ success: true });
-}));
+//   await devServerManager.startDevServer(sourceAbsolutePath);
+//   res.json({ success: true });
+// }));
 
-app.post('/api/stopApp', asyncHandler(async (req: Request, res: Response) => {
-  await devServerManager.stopDevServer();
-  res.json({ success: true });
-}));
+// app.post('/api/stopApp', asyncHandler(async (req: Request, res: Response) => {
+//   await devServerManager.stopDevServer();
+//   res.json({ success: true });
+// }));
 
 app.post('/api/processPrompt', asyncHandler(async (req: Request, res: Response) => {
-  const { prompt, sourceAbsolutePath } = req.body;
+  console.log('/api/processPrompt -> req.body: ', JSON.stringify(req.body));
+  
+  const { prompt, sourceAbsolutePath, selectedFilePaths } = req.body;
   if (!prompt) {
     return res.status(400).json({ commits: [], error: 'Missing "prompt" parameter.' });
   }
@@ -53,7 +55,7 @@ app.post('/api/processPrompt', asyncHandler(async (req: Request, res: Response) 
     return res.status(400).json({ commits: [], error: 'Missing "sourceAbsolutePath" parameter.' });
   }
 
-  const result: ProcessPromptResult = await promptProcessor.process(prompt, sourceAbsolutePath);
+  const result: ProcessPromptResult = await promptProcessor.process(prompt, sourceAbsolutePath, selectedFilePaths);
 
   if ('error' in result) {
     return res.status(500).json(result as ProcessPromptErrorResponse);

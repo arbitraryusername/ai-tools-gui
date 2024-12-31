@@ -19,6 +19,7 @@ type FilePayload = { name: string; path: string };
 
 type DirectoryTreeProps = {
   files: FilePayload[];
+  onCheckedChange: (checked: string[]) => void;
 };
 
 /**
@@ -63,7 +64,7 @@ const convertToCheckboxTreeData = (payload: any[]) => {
   return treeToArray(tree);
 };
 
-const DirectoryTree: React.FC<DirectoryTreeProps> = ({ files }) => {
+const DirectoryTree: React.FC<DirectoryTreeProps> = ({ files, onCheckedChange }) => {
   const [checked, setChecked] = useState([] as string[]);
   const [expanded, setExpanded] = useState([] as string[]);
 
@@ -81,25 +82,31 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({ files }) => {
     }, []);
   };
 
-  // Select all nodes
   const handleSelectAll = () => {
-    setChecked(flattenTree(treeData));
+    const allPaths = flattenTree(treeData);
+    setChecked(allPaths);
+    onCheckedChange(allPaths); // Notify parent
   };
 
-  // Deselect all nodes
   const handleSelectNone = () => {
     setChecked([]);
+    onCheckedChange([]); // Notify parent
+  };
+
+  const handleCheck = (checked: string[]) => {
+    setChecked(checked);
+    onCheckedChange(checked); // Notify parent
   };
 
   return (
     <Box>
       <Box display="flex" alignItems="left" marginBottom={1}>
         <IconButton onClick={handleSelectAll} color="primary">
-          <span style={{ fontSize: '0.8em', marginRight: '4px' }}>All</span>
+          <span style={{ fontSize: '1rem', marginRight: '4px' }}>All</span>
           <SelectAllIcon />
         </IconButton>
         <IconButton onClick={handleSelectNone} color="primary">
-          <span style={{ fontSize: '0.8em', marginRight: '4px' }}>None</span>
+          <span style={{ fontSize: '1rem', marginRight: '4px' }}>None</span>
           <DeselectIcon />
         </IconButton>
         <Typography variant="body1" sx={{ marginLeft: 2, paddingTop: 1 }}>
@@ -110,7 +117,7 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({ files }) => {
         nodes={treeData}
         checked={checked}
         expanded={expanded}
-        onCheck={(checked) => setChecked(checked)}
+        onCheck={handleCheck}
         onExpand={(expanded) => setExpanded(expanded)}
         icons={{
           check: <CheckBoxIcon color="primary" />,
