@@ -1,0 +1,643 @@
+
+Source code for my project is given below between 'SOURCE_START' and 'SOURCE_END'.
+Your specific instructions for exactly how to add, update, or delete code from my project's source code is between 'TASK_START' and 'TASK_END'. 
+In the source code, lines starting with ~~ are paths to files, followed by that file's content on the next line.
+Your output should only contain ~~put_file_path_here followed by the updated contents of that file.
+Do not give other output except for that, meaning no explanation or markup.
+Existing project dependencies are provided. Reuse existing dependencies when applicable.
+Add or remove dependencies to the package.json when needed, and provide the entire file in the response with only the needed changes.
+If there is a corresponding @types package for the added package, then also include this @types package in the package.json file.
+NEVER put comments in JSON files. Do not add comments in the code. Do not remove existing comments.
+If a file should be removed entirely, include ~~file_path on its own line, followed by a blank line.
+TASK_START
+craig's test prompt here
+TASK_END
+SOURCE_START
+
+~~client/index.html
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Tools GUI</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+~~client/package.json
+{
+  "name": "@ai-tools-gui/client",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build:shared": "pnpm --filter shared build",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@ai-tools-gui/shared": "workspace:*",
+    "@emotion/react": "^11.0.0",
+    "@emotion/styled": "^11.0.0",
+   
+    "@mui/material": "^5.0.0",
+    "react": "^18.3.1",
+    "react-checkbox-tree": "^1.8.0",
+    "react-collapse": "^5.0.0",
+    "react-diff-view": "^3.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "@types/react": "^18.3.18",
+    "@types/react-collapse": "^5.0.0",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react-swc": "^3.5.0",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-react-refresh": "^0.4.16",
+    "globals": "^15.14.0",
+    "vite": "^6.0.5"
+  }
+}
+~~client/src/App.css
+body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+* {
+  box-sizing: inherit;
+}
+
+.prompt {
+  margin: 30px 0 8px 0!important;
+}
+
+.local-directory-full-path {
+  margin: 8px 0!important;
+}
+
+.react-checkbox-tree button {
+  margin-right: 6px;
+}
+
+.diff {
+  font-size: 0.85rem!important;
+}
+
+.diff-line > .diff-code-delete,
+.diff-line > .diff-code-insert,
+.diff-line > .diff-gutter-delete,
+.diff-line > .diff-gutter-insert {
+  color: #000;
+}
+
+:root {
+  --diff-text-color: #AAA!important;
+  --diff-code-insert-background-color: #c7efd5!important;
+  --diff-code-delete-background-color: #f6c7cb!important;
+}
+~~client/src/App.tsx
+import { useState, useEffect } from 'react';
+import { Collapse } from 'react-collapse';
+import { format } from 'date-fns';
+import {
+  TextField,
+  Button,
+  CssBaseline,
+  ThemeProvider,
+  createTheme,
+  Box,
+  Typography,
+  Checkbox,
+  FormControlLabel,
+  IconButton,
+} from '@mui/material';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import type { ViewType } from 'react-diff-view';
+
+import { GitCommit } from '@ai-tools-gui/shared';
+import CommitDiffViewer from './components/CommitDiffViewer';
+import DirectoryTree from './components/DirectoryTree';
+import './App.css';
+
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+  },
+});
+
+function App() {
+  const defaultPath = 'C:/Users/craig/dev/ai-tools-gui';
+  
+  const [sourceAbsolutePath, setSourceAbsolutePath] = useState(defaultPath);
+  const [prompt, setPrompt] = useState('');
+  const [commits, setCommits] = useState<GitCommit[]>([]);
+  const [files, setFiles] = useState([]);
+  const [isOpen, setIsOpen] = useState<number | null>(null);
+  const [showSplit, setShowSplit] = useState(true);
+  const [selectedFilePaths, setSelectedFilePaths] = useState<string[]>([]);
+
+  const viewType: ViewType = showSplit ? 'split' : 'unified';
+
+  const handleSubmit = async () => {
+    const response = await fetch('http://localhost:3001/api/processPrompt', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ prompt, sourceAbsolutePath, selectedFilePaths }),
+    });
+
+    const data = await response.json();
+
+    if (data.commits) {
+      const newCommits = data.commits.map((commit: GitCommit) => ({
+        hash: commit.hash,
+        message: commit.message,
+        diff: commit.diff,
+        timestamp: commit.timestamp,
+      }));
+      setCommits(newCommits.concat(commits));
+    }
+  };
+
+  // const handleStartApp = async () => {
+  //   await fetch('http://localhost:3001/api/startApp', { method: 'POST' });
+  // };
+
+  // const handleStopApp = async () => {
+  //   await fetch('http://localhost:3001/api/stopApp', { method: 'POST' });
+  // };
+
+  const handleGetCommits = async () => {
+    const response = await fetch(
+      `http://localhost:3001/api/commits?sourceAbsolutePath=${encodeURIComponent(
+        sourceAbsolutePath
+      )}`
+    );
+    const data = await response.json();
+    if (Array.isArray(data)) {
+      setCommits(
+        data.map((commit: GitCommit) => ({
+          hash: commit.hash,
+          message: commit.message,
+          diff: commit.diff,
+          timestamp: commit.timestamp,
+        }))
+      );
+    }
+  };
+
+  const handleGetFiles = async () => {
+    const response = await fetch(
+      `http://localhost:3001/api/sourceFiles?sourceAbsolutePath=${encodeURIComponent(
+        sourceAbsolutePath
+      )}`
+    );
+    const files = await response.json();
+    setFiles(files);
+  };
+
+  const loadRepo = async () => {
+    await handleGetCommits();
+    await handleGetFiles();
+  }
+
+  useEffect(() => {
+    loadRepo();
+  }, []);
+
+  return (
+    <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
+      <Box
+        display="flex"
+        flexDirection="column"
+        height="100vh"
+        overflow="hidden"
+      >
+        {/* Top Section */}
+        <Box display="flex" flex="0 0 40%" overflow="hidden">
+          {/* Left Column */}
+          <Box
+            flex="1"
+            display="flex"
+            flexDirection="column"
+            padding={2}
+            overflow="auto"
+          >
+            <TextField
+              label="Repo Directory Full Path"
+              variant="outlined"
+              value={sourceAbsolutePath}
+              onChange={(e) => setSourceAbsolutePath(e.target.value)}
+              fullWidth
+              sx={{ marginBottom: 1 }}
+            />
+            <Box display="flex" gap={1} marginBottom={2}>
+              <Button
+                variant="contained"
+                onClick={loadRepo}
+                color="primary"
+              >
+                Load Repo
+              </Button>
+              {/* <Button
+                variant="contained"
+                onClick={handleStartApp}
+                color="success"
+              >
+                Start App
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleStopApp}
+                color="warning"
+              >
+                Stop App
+              </Button> */}
+            </Box>
+            <TextField
+              label="Prompt"
+              variant="outlined"
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              multiline
+              rows={5}
+              fullWidth
+              sx={{ marginBottom: 1 }}
+            />
+            <Button
+              variant="contained"
+              onClick={handleSubmit}
+              color="primary"
+              sx={{ alignSelf: 'flex-start' }}
+            >
+              Submit
+            </Button>
+          </Box>
+
+          {/* Right Column */}
+          <Box flex="1" overflow="auto">
+            <Box display="flex" justifyContent="space-between" alignItems="left">
+              <Typography sx={{ paddingTop: 1 }}>Files to include in Prompt</Typography>
+              <IconButton onClick={handleGetFiles} color="primary">
+                <RefreshIcon />
+              </IconButton>
+            </Box>
+            {
+              files.length > 0 && 
+              <DirectoryTree files={files} onCheckedChange={(checked) => setSelectedFilePaths(checked)} />
+            }
+          </Box>
+        </Box>
+
+        {/* Bottom Section */}
+        <Box flex="1" overflow="auto" padding={2} sx={{ marginTop: 1 }}>
+          <Box display="flex" justifyContent="space-between" alignItems="center" marginBottom={1}>
+            <Typography variant="h6">Commits</Typography>
+            <Box display="flex" alignItems="center">
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={showSplit}
+                    onChange={() => setShowSplit(!showSplit)}
+                    color="primary"
+                  />
+                }
+                label="Split View"
+              />
+              <IconButton onClick={handleGetCommits} color="primary">
+                <RefreshIcon />
+              </IconButton>
+            </Box>
+          </Box>
+          {commits.map((commit, index) => (
+            <Box key={commit.hash}>
+              <Box
+                onClick={() => setIsOpen(isOpen === index ? null : index)}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  cursor: 'pointer',
+                  marginBottom: '1rem',
+                  gap: 2,
+                }}
+              >
+                <Typography
+                  component="span"
+                  color="primary"
+                  sx={{ flexShrink: 0 }}
+                >
+                  {isOpen === index ? '▼' : '▶'}
+                </Typography>
+                <Typography
+                  component="span"
+                  sx={{
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0,
+                  }}
+                >
+                  {format(new Date(commit.timestamp), 'MMM d yyyy HH:mm:ss')}
+                </Typography>
+                <Typography
+                  component="strong"
+                  color="primary"
+                  sx={{
+                    flex: 1,
+                    wordBreak: 'break-word',
+                    textAlign: 'left',
+                  }}
+                >
+                  {commit.message}
+                </Typography>
+              </Box>
+              <Collapse isOpened={isOpen === index}>
+                <CommitDiffViewer diff={commit.diff} viewType={viewType} />
+              </Collapse>
+            </Box>
+          ))}
+        </Box>
+      </Box>
+    </ThemeProvider>
+  );
+}
+
+export default App;
+
+~~client/src/components/CommitDiffViewer.tsx
+import React from 'react';
+import { parseDiff, Diff, Hunk, ViewType } from 'react-diff-view';
+import 'react-diff-view/style/index.css';
+
+interface CommitDiffViewerProps {
+  diff: string;
+  viewType: ViewType;
+}
+
+const CommitDiffViewer: React.FC<CommitDiffViewerProps> = ({ diff, viewType }) => {
+  try {
+    const files = parseDiff(diff);
+
+    return (
+      <div style={{ margin: '1rem 0 2rem 0' }}>
+        {files.map(({ oldPath, newPath, type, hunks }) => {
+          return (
+            <div key={newPath || oldPath} style={{ marginBottom: '2rem' }}>
+              <div style={{ width: '100%', borderBottom: '1px solid white', marginBottom: '8px', fontWeight: 'bold' }}>
+                {type === 'rename'
+                  ? `Renamed: ${oldPath} → ${newPath}`
+                  : type === 'copy'
+                  ? `Copied: ${oldPath} → ${newPath}`
+                  : oldPath === '/dev/null'
+                  ? `New File: ${newPath}`
+                  : newPath === '/dev/null'
+                  ? `Deleted File: ${oldPath}`
+                  : `${oldPath} → ${newPath}`}
+              </div>
+              <Diff viewType={viewType} hunks={hunks} diffType={type}>
+                {(hunks) => hunks.map((hunk) => <Hunk key={hunk.content} hunk={hunk} />)}
+              </Diff>
+            </div>
+          );
+        })}
+      </div>
+    );
+  } catch (error) {
+    console.error('Error parsing diff:', error);
+    return <div>Error displaying the diff. Please check the format.</div>;
+  }
+};
+
+export default CommitDiffViewer;
+
+~~client/src/components/DirectoryTree.tsx
+import React, { useState } from "react";
+import CheckboxTree from "react-checkbox-tree";
+import "react-checkbox-tree/lib/react-checkbox-tree.css";
+import {
+  CheckBox as CheckBoxIcon,
+  CheckBoxOutlineBlank as CheckBoxOutlineBlankIcon,
+  IndeterminateCheckBox as IndeterminateCheckBoxIcon,
+  ExpandMore as ExpandMoreIcon,
+  ChevronRight as ChevronRightIcon,
+  Folder as FolderIcon,
+  FolderOpen as FolderOpenIcon,
+  Description as FileIcon,
+  SelectAll as SelectAllIcon,
+  Deselect as DeselectIcon, 
+} from "@mui/icons-material";
+import { Box, IconButton, Typography } from "@mui/material";
+
+type FilePayload = { name: string; path: string };
+
+type DirectoryTreeProps = {
+  files: FilePayload[];
+  onCheckedChange: (checked: string[]) => void;
+};
+
+/**
+ * Converts a flat array of file paths into a nested structure suitable for react-checkbox-tree.
+ */
+const convertToCheckboxTreeData = (payload: any[]) => {
+  const tree = {};
+
+  // Helper function to build the tree structure
+  const addNode = (parts: string[], subTree: any, fullPath: string, isLeaf: boolean) => {
+    const [current, ...rest] = parts;
+
+    if (!subTree[current]) {
+      subTree[current] = {
+        value: isLeaf && rest.length === 0 ? fullPath : `${fullPath}/`, // Ensure unique values for folders and files
+        label: current,
+        children: rest.length > 0 ? {} : null,
+      };
+    }
+
+    if (rest.length > 0) {
+      addNode(rest, subTree[current].children, fullPath, rest.length === 1);
+    }
+  };
+
+  // Build the tree from the payload
+  payload.forEach(({ path }) => {
+    const parts = path.split("/");
+    const isLeaf = parts.length === 1; // Determine if it's a file or a folder
+    addNode(parts, tree, path, isLeaf);
+  });
+
+  // Helper function to convert the tree object to an array
+  const treeToArray = (subTree: any) => {
+    return Object.values(subTree).map((node: any): any => ({
+      value: node.value,
+      label: node.label,
+      children: node.children ? treeToArray(node.children) : undefined,
+    }));
+  };
+
+  return treeToArray(tree);
+};
+
+const DirectoryTree: React.FC<DirectoryTreeProps> = ({ files, onCheckedChange }) => {
+  const [checked, setChecked] = useState([] as string[]);
+  const [expanded, setExpanded] = useState([] as string[]);
+
+  // Convert files to the tree data format
+  const treeData = convertToCheckboxTreeData(files);
+
+  // Flatten all node values for select/deselect operations
+  const flattenTree = (nodes: any[]): string[] => {
+    return nodes.reduce((acc: string[], node: any) => {
+      acc.push(node.value);
+      if (node.children) {
+        acc = acc.concat(flattenTree(node.children));
+      }
+      return acc;
+    }, []);
+  };
+
+  const handleSelectAll = () => {
+    const allPaths = flattenTree(treeData);
+    setChecked(allPaths);
+    onCheckedChange(allPaths); // Notify parent
+  };
+
+  const handleSelectNone = () => {
+    setChecked([]);
+    onCheckedChange([]); // Notify parent
+  };
+
+  const handleCheck = (checked: string[]) => {
+    setChecked(checked);
+    onCheckedChange(checked); // Notify parent
+  };
+
+  return (
+    <Box>
+      <Box display="flex" alignItems="left" marginBottom={1}>
+        <IconButton onClick={handleSelectAll} color="primary">
+          <span style={{ fontSize: '1rem', marginRight: '4px' }}>All</span>
+          <SelectAllIcon />
+        </IconButton>
+        <IconButton onClick={handleSelectNone} color="primary">
+          <span style={{ fontSize: '1rem', marginRight: '4px' }}>None</span>
+          <DeselectIcon />
+        </IconButton>
+        <Typography variant="body1" sx={{ marginLeft: 2, paddingTop: 1 }}>
+          {`Files Selected: ${checked.length}`}
+        </Typography>
+      </Box>
+      <CheckboxTree
+        nodes={treeData}
+        checked={checked}
+        expanded={expanded}
+        onCheck={handleCheck}
+        onExpand={(expanded) => setExpanded(expanded)}
+        icons={{
+          check: <CheckBoxIcon color="primary" />,
+          uncheck: <CheckBoxOutlineBlankIcon color="primary" />,
+          halfCheck: <IndeterminateCheckBoxIcon color="primary" />,
+          expandClose: <ChevronRightIcon color="primary" />,
+          expandOpen: <ExpandMoreIcon color="primary" />,
+          parentClose: <FolderIcon color="primary" />,
+          parentOpen: <FolderOpenIcon color="primary" />,
+          leaf: <FileIcon color="primary" />,
+        }}
+      />
+    </Box>
+  );
+};
+
+export default DirectoryTree;
+
+~~client/src/index.css
+
+~~client/src/main.tsx
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import './index.css'
+import App from './App.tsx'
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+)
+
+~~shared/src/index.ts
+export interface GitCommit {
+  hash: string;
+  message: string;
+  diff: string;
+  timestamp: Date | string;
+}
+
+export const sampleGitCommits: GitCommit[] = [
+  {
+    hash: 'a45f60bc837efc68e875e3f897267f31be7498ba',
+    message: 'test commit',
+    diff: `diff --git a/src/App.tsx b/src/App.tsx
+index 9af1638..4bde507 100644
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -10,7 +10,12 @@ function App() {
+   const [isOpen, setIsOpen] = useState(false);
+
+   const toggleOpen = () => {
+-    setIsOpen(!isOpen);
++    if (isOpen) {
++      console.log('Closing...');
++    } else {
++      console.log('Opening...');
++    }
++    setIsOpen(!isOpen);
+   };
+
+   return (
+@@ -30,4 +35,5 @@ function App() {
+       <button onClick={toggleOpen}>Toggle</button>
+       {isOpen && <div>Content is now visible!</div>}
+     </div>
++    <p>New footer message</p>
+   );
+ }
+diff --git a/src/NewComponent.tsx b/src/NewComponent.tsx
+new file mode 100644
+index 0000000..e69de29
+--- /dev/null
++++ b/src/NewComponent.tsx
+@@ -0,0 +1,10 @@
++import React from 'react';
++
++export default function NewComponent() {
++  return (
++    <div>
++      <h1>New Component</h1>
++      <p>This is a brand new component added to the project.</p>
++    </div>
++  );
++}
+diff --git a/src/unusedFile.tsx b/src/unusedFile.tsx
+deleted file mode 100644
+index 3b17f6d..0000000
+--- a/src/unusedFile.tsx
++++ /dev/null
+@@ -1,5 +0,0 @@
+-import React from 'react';
+-
+-export default function UnusedFile() {
+-  return <div>This file is no longer used and has been removed.</div>;
+-}`,
+    timestamp: new Date()
+  }
+];
+
+SOURCE_END

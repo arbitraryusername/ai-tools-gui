@@ -72,24 +72,24 @@ export async function applyChangesToSourceCode(generatedCodeChanges: string, sou
  */
 export async function combineFilesIntoString(
   sourceAbsolutePath: string,
-  selectedFilePaths: string[]
+  fileRelativePaths: string[]
 ): Promise<string> {
   const delimiter = getFilePathDelimiter();
   let combinedContent = '';
 
   try {
-    const excludedPaths = await getExcludedPaths(sourceAbsolutePath);
-    const allowedFiles = await getAllAllowedFiles(sourceAbsolutePath, excludedPaths);
+    // const excludedPaths = await getExcludedPaths(sourceAbsolutePath);
+    // const allowedFiles = await getAllAllowedFiles(sourceAbsolutePath, excludedPaths);
 
-    for (let i = 0; i < allowedFiles.length; i += FILE_PROCESSING_CONCURRENCY) {
-      const chunk = allowedFiles.slice(i, i + FILE_PROCESSING_CONCURRENCY);
-      const readTasks = chunk.map(async (file) => {
+    for (let i = 0; i < fileRelativePaths.length; i += FILE_PROCESSING_CONCURRENCY) {
+      const chunk = fileRelativePaths.slice(i, i + FILE_PROCESSING_CONCURRENCY);
+      const readTasks = chunk.map(async (fileRelativePath) => {
         try {
-          const fileContents = await fs.readFile(path.join(sourceAbsolutePath, file.path), 'utf-8');
-          return `\n${delimiter}${file.path}\n${fileContents}`;
+          const fileContents = await fs.readFile(path.join(sourceAbsolutePath, fileRelativePath), 'utf-8');
+          return `\n${delimiter}${fileRelativePath}\n${fileContents}`;
         } catch (error) {
-          const processingError: FileProcessingError = new Error(`Error reading file: ${file.path}`);
-          processingError.path = file.path;
+          const processingError: FileProcessingError = new Error(`Error reading file: ${fileRelativePath}`);
+          processingError.path = fileRelativePath;
           processingError.cause = error;
           throw processingError;
         }

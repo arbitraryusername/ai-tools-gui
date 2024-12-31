@@ -46,13 +46,16 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 
 app.post('/api/processPrompt', asyncHandler(async (req: Request, res: Response) => {
   console.log('/api/processPrompt -> req.body: ', JSON.stringify(req.body));
-  
+
   const { prompt, sourceAbsolutePath, selectedFilePaths } = req.body;
   if (!prompt) {
     return res.status(400).json({ commits: [], error: 'Missing "prompt" parameter.' });
   }
   if (!sourceAbsolutePath) {
     return res.status(400).json({ commits: [], error: 'Missing "sourceAbsolutePath" parameter.' });
+  }
+  if (!selectedFilePaths?.length) {
+    return res.status(400).json({ commits: [], error: 'Parameter "selectedFilePaths" must be a non empty list.' });
   }
 
   const result: ProcessPromptResult = await promptProcessor.process(prompt, sourceAbsolutePath, selectedFilePaths);
