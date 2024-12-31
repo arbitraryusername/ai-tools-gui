@@ -36,7 +36,7 @@ class PromptProcessor {
       // console.log("DEBUG fullPrompt:\n\n", fullPrompt);
       await writeFile('./fullPrompt.txt', fullPrompt, 'utf8');
 
-      return { commits: [] };
+      // return { commits: [] };
 
       const generatedCode = await generateCode(fullPrompt);
   

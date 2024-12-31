@@ -181,7 +181,7 @@ function App() {
           {/* Right Column */}
           <Box flex="1" overflow="auto">
             <Box display="flex" justifyContent="space-between" alignItems="left">
-              <Typography sx={{ paddingTop: 1 }}>Files to include in Prompt</Typography>
+              <Typography sx={{ paddingTop: 1, paddingLeft: 1 }}>Select files to include in Prompt</Typography>
               <IconButton onClick={handleGetFiles} color="primary">
                 <RefreshIcon />
               </IconButton>
