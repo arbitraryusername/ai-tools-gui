@@ -133,6 +133,6 @@ dist
 **/pnpm-lock.yaml
 
 # notes and debug output files
-ISSUES.txt
-TODOs.txt
-fullPrompt.txt
+**/ISSUES.txt
+**/TODOs.txt
+**/fullPrompt.txt
