@@ -131,3 +131,8 @@ dist
 
 # giant lock file (pollutes commit diffs) - ignore all pnpm-lock.yaml files recursively
 **/pnpm-lock.yaml
+
+# notes and debug output files
+ISSUES.txt
+TODOs.txt
+fullPrompt.txt
