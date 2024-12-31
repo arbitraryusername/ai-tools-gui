@@ -51,15 +51,8 @@ function App() {
     });
 
     const data = await response.json();
-
     if (data.commits) {
-      const newCommits = data.commits.map((commit: GitCommit) => ({
-        hash: commit.hash,
-        message: commit.message,
-        diff: commit.diff,
-        timestamp: commit.timestamp,
-      }));
-      setCommits(newCommits.concat(commits));
+      await handleGetCommits();
     }
   };
 
@@ -71,8 +64,8 @@ function App() {
       },
       body: JSON.stringify({ sourceAbsolutePath }),
     });
-    const success = await response.json();
-    if (success) {
+    const data = await response.json();
+    if (data.revertedCommit) {
       await handleGetCommits();
     }
   };

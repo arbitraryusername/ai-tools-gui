@@ -98,9 +98,9 @@ app.post('/api/revertLastCommit', asyncHandler(async (req: Request, res: Respons
   }
 
   try {
-    await revertLastCommit(sourceAbsolutePath);
-    return res.json({ success: true });
-  } catch (error) {
-    return res.json({ success: false });
+    const revertedCommit = await revertLastCommit(sourceAbsolutePath);
+    return res.json(revertedCommit);
+  } catch (error: any) {
+    return res.status(500).json({ error: `Rever commit failed: ${error.message}` });
   }
 }));

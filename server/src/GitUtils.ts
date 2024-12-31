@@ -60,7 +60,8 @@ export async function revertLastCommit(
     const commitDiff = await git.show([currentCommitHash]);
     const timestamp = new Date((await git.show(['-s', '--format=%ct', currentCommitHash])).trim() + '000');
 
-    await git.reset(['--hard', 'HEAD~1']);
+    // Revert the most recent commit
+    await git.revert(currentCommitHash);
 
     console.log(`Successfully reverted the most recent commit: ${currentCommitHash}`);
     
