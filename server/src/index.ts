@@ -10,6 +10,7 @@ import {
 import { devServerManager } from './DevServerManager.js';
 import { getLastCommits } from './GitUtils.js';
 import { getSourceFiles } from './SourceCodeHelper.js';
+import { revertLastCommit } from './GitUtils.js';
 
 const app = express();
 const PORT = 3001;
@@ -87,4 +88,19 @@ app.get('/api/sourceFiles', asyncHandler(async (req: Request, res: Response) => 
 
   const files = await getSourceFiles(sourceAbsolutePath);
   res.json(files);
+}));
+
+app.post('/api/revertLastCommit', asyncHandler(async (req: Request, res: Response) => {
+  const sourceAbsolutePath = req.body.sourceAbsolutePath as string;
+
+  if (!sourceAbsolutePath) {
+    return res.status(400).json({ error: 'Missing "sourceAbsolutePath" parameter.' });
+  }
+
+  try {
+    await revertLastCommit(sourceAbsolutePath);
+    return res.json({ success: true });
+  } catch (error) {
+    return res.json({ success: false });
+  }
 }));

@@ -1,8 +1,10 @@
 
 Source code for my project is given below between 'SOURCE_START' and 'SOURCE_END'.
-Your specific instructions for exactly how to add, update, or delete code from my project's source code is between 'TASK_START' and 'TASK_END'. 
+Your specific instructions for exactly how to add, update, or delete code from my project's source code is between 'TASK_START' and 'TASK_END'.
+If the text between 'TASK_START' and 'TASK_END' contradict the instructions in this top section, then follow this top set of instructions.
 In the source code, lines starting with ~~ are paths to files, followed by that file's content on the next line.
 Your output should only contain ~~put_file_path_here followed by the updated contents of that file.
+It is critially important that you include the entire file's content in your response if that file should be updated.
 Do not give other output except for that, meaning no explanation or markup.
 Existing project dependencies are provided. Reuse existing dependencies when applicable.
 Add or remove dependencies to the package.json when needed, and provide the entire file in the response with only the needed changes.
@@ -10,634 +12,974 @@ If there is a corresponding @types package for the added package, then also incl
 NEVER put comments in JSON files. Do not add comments in the code. Do not remove existing comments.
 If a file should be removed entirely, include ~~file_path on its own line, followed by a blank line.
 TASK_START
-craig's test prompt here
+add an http endpoint /api/revertLastCommit to index.ts, which should call the existing function in GitHelper. if the commit was reverted successfully, then return true to the caller of the http endpoint. otherwise return false.
 TASK_END
 SOURCE_START
 
-~~client/index.html
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI Tools GUI</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
-~~client/package.json
+~~server/nodemon.json
 {
-  "name": "@ai-tools-gui/client",
-  "private": true,
-  "version": "0.0.0",
+  "watch": ["src"],
+  "ext": "ts",
+  "exec": "node --inspect --loader ts-node/esm src/index.ts",
+  "ignore": ["dist"]
+}
+
+~~server/package.json
+{
+  "name": "@ai-tools-gui/server",
+  "version": "1.0.0",
   "type": "module",
+  "description": "Backend server for the project",
+  "main": "dist/index.js",
   "scripts": {
-    "dev": "vite",
+    "build": "tsc",
     "build:shared": "pnpm --filter shared build",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "start": "node dist/index.js",
+    "dev": "nodemon"
   },
   "dependencies": {
     "@ai-tools-gui/shared": "workspace:*",
-    "@emotion/react": "^11.0.0",
-    "@emotion/styled": "^11.0.0",
-   
-    "@mui/material": "^5.0.0",
-    "react": "^18.3.1",
-    "react-checkbox-tree": "^1.8.0",
-    "react-collapse": "^5.0.0",
-    "react-diff-view": "^3.3.1",
-    "react-dom": "^18.3.1"
+    "@types/cors": "^2.8.17",
+    "@types/cross-spawn": "^6.0.6",
+    "@types/express": "^4.17.21",
+    "cors": "^2.8.5",
+    "cross-spawn": "^7.0.6",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "ignore": "^7.0.0",
+    "openai": "^4.76.3",
+    "simple-git": "^3.27.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.17.0",
-    "@types/react": "^18.3.18",
-    "@types/react-collapse": "^5.0.0",
-    "@types/react-dom": "^18.3.5",
-    "@vitejs/plugin-react-swc": "^3.5.0",
-    "eslint-plugin-react-hooks": "^5.0.0",
-    "eslint-plugin-react-refresh": "^0.4.16",
-    "globals": "^15.14.0",
-    "vite": "^6.0.5"
+    "@types/gitignore-parser": "^0.0.3",
+    "@types/node": "^20.4.0",
+    "nodemon": "^3.1.9",
+    "ts-node": "^10.9.2"
   }
 }
-~~client/src/App.css
-body {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  overflow: hidden;
+~~server/src/AppConfig.ts
+import { fileURLToPath } from 'url';
+import path from 'path';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const FILE_PATH_DELIMITER = "~~" as const;
+
+export function getCurrentDirectory(): string {
+  const __filename = fileURLToPath(import.meta.url);
+  return path.dirname(__filename);
 }
 
-* {
-  box-sizing: inherit;
-}
-
-.prompt {
-  margin: 30px 0 8px 0!important;
-}
-
-.local-directory-full-path {
-  margin: 8px 0!important;
-}
-
-.react-checkbox-tree button {
-  margin-right: 6px;
-}
-
-.diff {
-  font-size: 0.85rem!important;
-}
-
-.diff-line > .diff-code-delete,
-.diff-line > .diff-code-insert,
-.diff-line > .diff-gutter-delete,
-.diff-line > .diff-gutter-insert {
-  color: #000;
-}
-
-:root {
-  --diff-text-color: #AAA!important;
-  --diff-code-insert-background-color: #c7efd5!important;
-  --diff-code-delete-background-color: #f6c7cb!important;
-}
-~~client/src/App.tsx
-import { useState, useEffect } from 'react';
-import { Collapse } from 'react-collapse';
-import { format } from 'date-fns';
-import {
-  TextField,
-  Button,
-  CssBaseline,
-  ThemeProvider,
-  createTheme,
-  Box,
-  Typography,
-  Checkbox,
-  FormControlLabel,
-  IconButton,
-} from '@mui/material';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import type { ViewType } from 'react-diff-view';
-
-import { GitCommit } from '@ai-tools-gui/shared';
-import CommitDiffViewer from './components/CommitDiffViewer';
-import DirectoryTree from './components/DirectoryTree';
-import './App.css';
-
-const darkTheme = createTheme({
-  palette: {
-    mode: 'dark',
-  },
-});
-
-function App() {
-  const defaultPath = 'C:/Users/craig/dev/ai-tools-gui';
-  
-  const [sourceAbsolutePath, setSourceAbsolutePath] = useState(defaultPath);
-  const [prompt, setPrompt] = useState('');
-  const [commits, setCommits] = useState<GitCommit[]>([]);
-  const [files, setFiles] = useState([]);
-  const [isOpen, setIsOpen] = useState<number | null>(null);
-  const [showSplit, setShowSplit] = useState(true);
-  const [selectedFilePaths, setSelectedFilePaths] = useState<string[]>([]);
-
-  const viewType: ViewType = showSplit ? 'split' : 'unified';
-
-  const handleSubmit = async () => {
-    const response = await fetch('http://localhost:3001/api/processPrompt', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ prompt, sourceAbsolutePath, selectedFilePaths }),
-    });
-
-    const data = await response.json();
-
-    if (data.commits) {
-      const newCommits = data.commits.map((commit: GitCommit) => ({
-        hash: commit.hash,
-        message: commit.message,
-        diff: commit.diff,
-        timestamp: commit.timestamp,
-      }));
-      setCommits(newCommits.concat(commits));
-    }
-  };
-
-  // const handleStartApp = async () => {
-  //   await fetch('http://localhost:3001/api/startApp', { method: 'POST' });
-  // };
-
-  // const handleStopApp = async () => {
-  //   await fetch('http://localhost:3001/api/stopApp', { method: 'POST' });
-  // };
-
-  const handleGetCommits = async () => {
-    const response = await fetch(
-      `http://localhost:3001/api/commits?sourceAbsolutePath=${encodeURIComponent(
-        sourceAbsolutePath
-      )}`
-    );
-    const data = await response.json();
-    if (Array.isArray(data)) {
-      setCommits(
-        data.map((commit: GitCommit) => ({
-          hash: commit.hash,
-          message: commit.message,
-          diff: commit.diff,
-          timestamp: commit.timestamp,
-        }))
-      );
-    }
-  };
-
-  const handleGetFiles = async () => {
-    const response = await fetch(
-      `http://localhost:3001/api/sourceFiles?sourceAbsolutePath=${encodeURIComponent(
-        sourceAbsolutePath
-      )}`
-    );
-    const files = await response.json();
-    setFiles(files);
-  };
-
-  const loadRepo = async () => {
-    await handleGetCommits();
-    await handleGetFiles();
+export function getSourceCodeRelativePath(): string {
+  const relativePath = process.env.SOURCE_CODE_RELATIVE_PATH;
+  if (!relativePath) {
+    throw new Error('SOURCE_CODE_RELATIVE_PATH environment variable is not set');
   }
-
-  useEffect(() => {
-    loadRepo();
-  }, []);
-
-  return (
-    <ThemeProvider theme={darkTheme}>
-      <CssBaseline />
-      <Box
-        display="flex"
-        flexDirection="column"
-        height="100vh"
-        overflow="hidden"
-      >
-        {/* Top Section */}
-        <Box display="flex" flex="0 0 40%" overflow="hidden">
-          {/* Left Column */}
-          <Box
-            flex="1"
-            display="flex"
-            flexDirection="column"
-            padding={2}
-            overflow="auto"
-          >
-            <TextField
-              label="Repo Directory Full Path"
-              variant="outlined"
-              value={sourceAbsolutePath}
-              onChange={(e) => setSourceAbsolutePath(e.target.value)}
-              fullWidth
-              sx={{ marginBottom: 1 }}
-            />
-            <Box display="flex" gap={1} marginBottom={2}>
-              <Button
-                variant="contained"
-                onClick={loadRepo}
-                color="primary"
-              >
-                Load Repo
-              </Button>
-              {/* <Button
-                variant="contained"
-                onClick={handleStartApp}
-                color="success"
-              >
-                Start App
-              </Button>
-              <Button
-                variant="contained"
-                onClick={handleStopApp}
-                color="warning"
-              >
-                Stop App
-              </Button> */}
-            </Box>
-            <TextField
-              label="Prompt"
-              variant="outlined"
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              multiline
-              rows={5}
-              fullWidth
-              sx={{ marginBottom: 1 }}
-            />
-            <Button
-              variant="contained"
-              onClick={handleSubmit}
-              color="primary"
-              sx={{ alignSelf: 'flex-start' }}
-            >
-              Submit
-            </Button>
-          </Box>
-
-          {/* Right Column */}
-          <Box flex="1" overflow="auto">
-            <Box display="flex" justifyContent="space-between" alignItems="left">
-              <Typography sx={{ paddingTop: 1 }}>Files to include in Prompt</Typography>
-              <IconButton onClick={handleGetFiles} color="primary">
-                <RefreshIcon />
-              </IconButton>
-            </Box>
-            {
-              files.length > 0 && 
-              <DirectoryTree files={files} onCheckedChange={(checked) => setSelectedFilePaths(checked)} />
-            }
-          </Box>
-        </Box>
-
-        {/* Bottom Section */}
-        <Box flex="1" overflow="auto" padding={2} sx={{ marginTop: 1 }}>
-          <Box display="flex" justifyContent="space-between" alignItems="center" marginBottom={1}>
-            <Typography variant="h6">Commits</Typography>
-            <Box display="flex" alignItems="center">
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={showSplit}
-                    onChange={() => setShowSplit(!showSplit)}
-                    color="primary"
-                  />
-                }
-                label="Split View"
-              />
-              <IconButton onClick={handleGetCommits} color="primary">
-                <RefreshIcon />
-              </IconButton>
-            </Box>
-          </Box>
-          {commits.map((commit, index) => (
-            <Box key={commit.hash}>
-              <Box
-                onClick={() => setIsOpen(isOpen === index ? null : index)}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  cursor: 'pointer',
-                  marginBottom: '1rem',
-                  gap: 2,
-                }}
-              >
-                <Typography
-                  component="span"
-                  color="primary"
-                  sx={{ flexShrink: 0 }}
-                >
-                  {isOpen === index ? '▼' : '▶'}
-                </Typography>
-                <Typography
-                  component="span"
-                  sx={{
-                    whiteSpace: 'nowrap',
-                    flexShrink: 0,
-                  }}
-                >
-                  {format(new Date(commit.timestamp), 'MMM d yyyy HH:mm:ss')}
-                </Typography>
-                <Typography
-                  component="strong"
-                  color="primary"
-                  sx={{
-                    flex: 1,
-                    wordBreak: 'break-word',
-                    textAlign: 'left',
-                  }}
-                >
-                  {commit.message}
-                </Typography>
-              </Box>
-              <Collapse isOpened={isOpen === index}>
-                <CommitDiffViewer diff={commit.diff} viewType={viewType} />
-              </Collapse>
-            </Box>
-          ))}
-        </Box>
-      </Box>
-    </ThemeProvider>
-  );
+  return relativePath;
 }
-
-export default App;
-
-~~client/src/components/CommitDiffViewer.tsx
-import React from 'react';
-import { parseDiff, Diff, Hunk, ViewType } from 'react-diff-view';
-import 'react-diff-view/style/index.css';
-
-interface CommitDiffViewerProps {
-  diff: string;
-  viewType: ViewType;
-}
-
-const CommitDiffViewer: React.FC<CommitDiffViewerProps> = ({ diff, viewType }) => {
-  try {
-    const files = parseDiff(diff);
-
-    return (
-      <div style={{ margin: '1rem 0 2rem 0' }}>
-        {files.map(({ oldPath, newPath, type, hunks }) => {
-          return (
-            <div key={newPath || oldPath} style={{ marginBottom: '2rem' }}>
-              <div style={{ width: '100%', borderBottom: '1px solid white', marginBottom: '8px', fontWeight: 'bold' }}>
-                {type === 'rename'
-                  ? `Renamed: ${oldPath} → ${newPath}`
-                  : type === 'copy'
-                  ? `Copied: ${oldPath} → ${newPath}`
-                  : oldPath === '/dev/null'
-                  ? `New File: ${newPath}`
-                  : newPath === '/dev/null'
-                  ? `Deleted File: ${oldPath}`
-                  : `${oldPath} → ${newPath}`}
-              </div>
-              <Diff viewType={viewType} hunks={hunks} diffType={type}>
-                {(hunks) => hunks.map((hunk) => <Hunk key={hunk.content} hunk={hunk} />)}
-              </Diff>
-            </div>
-          );
-        })}
-      </div>
-    );
-  } catch (error) {
-    console.error('Error parsing diff:', error);
-    return <div>Error displaying the diff. Please check the format.</div>;
-  }
-};
-
-export default CommitDiffViewer;
-
-~~client/src/components/DirectoryTree.tsx
-import React, { useState } from "react";
-import CheckboxTree from "react-checkbox-tree";
-import "react-checkbox-tree/lib/react-checkbox-tree.css";
-import {
-  CheckBox as CheckBoxIcon,
-  CheckBoxOutlineBlank as CheckBoxOutlineBlankIcon,
-  IndeterminateCheckBox as IndeterminateCheckBoxIcon,
-  ExpandMore as ExpandMoreIcon,
-  ChevronRight as ChevronRightIcon,
-  Folder as FolderIcon,
-  FolderOpen as FolderOpenIcon,
-  Description as FileIcon,
-  SelectAll as SelectAllIcon,
-  Deselect as DeselectIcon, 
-} from "@mui/icons-material";
-import { Box, IconButton, Typography } from "@mui/material";
-
-type FilePayload = { name: string; path: string };
-
-type DirectoryTreeProps = {
-  files: FilePayload[];
-  onCheckedChange: (checked: string[]) => void;
-};
 
 /**
- * Converts a flat array of file paths into a nested structure suitable for react-checkbox-tree.
+ * Retrieves the absolute path to the source code directory with forward slashes.
+ *
+ * @returns The absolute path with forward slashes
+ * @throws Error if required environment variables are not set
  */
-const convertToCheckboxTreeData = (payload: any[]) => {
-  const tree = {};
-
-  // Helper function to build the tree structure
-  const addNode = (parts: string[], subTree: any, fullPath: string, isLeaf: boolean) => {
-    const [current, ...rest] = parts;
-
-    if (!subTree[current]) {
-      subTree[current] = {
-        value: isLeaf && rest.length === 0 ? fullPath : `${fullPath}/`, // Ensure unique values for folders and files
-        label: current,
-        children: rest.length > 0 ? {} : null,
-      };
-    }
-
-    if (rest.length > 0) {
-      addNode(rest, subTree[current].children, fullPath, rest.length === 1);
-    }
-  };
-
-  // Build the tree from the payload
-  payload.forEach(({ path }) => {
-    const parts = path.split("/");
-    const isLeaf = parts.length === 1; // Determine if it's a file or a folder
-    addNode(parts, tree, path, isLeaf);
-  });
-
-  // Helper function to convert the tree object to an array
-  const treeToArray = (subTree: any) => {
-    return Object.values(subTree).map((node: any): any => ({
-      value: node.value,
-      label: node.label,
-      children: node.children ? treeToArray(node.children) : undefined,
-    }));
-  };
-
-  return treeToArray(tree);
-};
-
-const DirectoryTree: React.FC<DirectoryTreeProps> = ({ files, onCheckedChange }) => {
-  const [checked, setChecked] = useState([] as string[]);
-  const [expanded, setExpanded] = useState([] as string[]);
-
-  // Convert files to the tree data format
-  const treeData = convertToCheckboxTreeData(files);
-
-  // Flatten all node values for select/deselect operations
-  const flattenTree = (nodes: any[]): string[] => {
-    return nodes.reduce((acc: string[], node: any) => {
-      acc.push(node.value);
-      if (node.children) {
-        acc = acc.concat(flattenTree(node.children));
-      }
-      return acc;
-    }, []);
-  };
-
-  const handleSelectAll = () => {
-    const allPaths = flattenTree(treeData);
-    setChecked(allPaths);
-    onCheckedChange(allPaths); // Notify parent
-  };
-
-  const handleSelectNone = () => {
-    setChecked([]);
-    onCheckedChange([]); // Notify parent
-  };
-
-  const handleCheck = (checked: string[]) => {
-    setChecked(checked);
-    onCheckedChange(checked); // Notify parent
-  };
-
-  return (
-    <Box>
-      <Box display="flex" alignItems="left" marginBottom={1}>
-        <IconButton onClick={handleSelectAll} color="primary">
-          <span style={{ fontSize: '1rem', marginRight: '4px' }}>All</span>
-          <SelectAllIcon />
-        </IconButton>
-        <IconButton onClick={handleSelectNone} color="primary">
-          <span style={{ fontSize: '1rem', marginRight: '4px' }}>None</span>
-          <DeselectIcon />
-        </IconButton>
-        <Typography variant="body1" sx={{ marginLeft: 2, paddingTop: 1 }}>
-          {`Files Selected: ${checked.length}`}
-        </Typography>
-      </Box>
-      <CheckboxTree
-        nodes={treeData}
-        checked={checked}
-        expanded={expanded}
-        onCheck={handleCheck}
-        onExpand={(expanded) => setExpanded(expanded)}
-        icons={{
-          check: <CheckBoxIcon color="primary" />,
-          uncheck: <CheckBoxOutlineBlankIcon color="primary" />,
-          halfCheck: <IndeterminateCheckBoxIcon color="primary" />,
-          expandClose: <ChevronRightIcon color="primary" />,
-          expandOpen: <ExpandMoreIcon color="primary" />,
-          parentClose: <FolderIcon color="primary" />,
-          parentOpen: <FolderOpenIcon color="primary" />,
-          leaf: <FileIcon color="primary" />,
-        }}
-      />
-    </Box>
-  );
-};
-
-export default DirectoryTree;
-
-~~client/src/index.css
-
-~~client/src/main.tsx
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
-
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-)
-
-~~shared/src/index.ts
-export interface GitCommit {
-  hash: string;
-  message: string;
-  diff: string;
-  timestamp: Date | string;
+export function getSourceCodeAbsolutePath(): string {
+  const currentDirectory = getCurrentDirectory();
+  const sourceCodeRelativePath = getSourceCodeRelativePath();
+  
+  const absolutePath = path.resolve(currentDirectory, sourceCodeRelativePath);
+  return absolutePath.split(path.sep).join('/');
 }
 
-export const sampleGitCommits: GitCommit[] = [
-  {
-    hash: 'a45f60bc837efc68e875e3f897267f31be7498ba',
-    message: 'test commit',
-    diff: `diff --git a/src/App.tsx b/src/App.tsx
-index 9af1638..4bde507 100644
---- a/src/App.tsx
-+++ b/src/App.tsx
-@@ -10,7 +10,12 @@ function App() {
-   const [isOpen, setIsOpen] = useState(false);
-
-   const toggleOpen = () => {
--    setIsOpen(!isOpen);
-+    if (isOpen) {
-+      console.log('Closing...');
-+    } else {
-+      console.log('Opening...');
-+    }
-+    setIsOpen(!isOpen);
-   };
-
-   return (
-@@ -30,4 +35,5 @@ function App() {
-       <button onClick={toggleOpen}>Toggle</button>
-       {isOpen && <div>Content is now visible!</div>}
-     </div>
-+    <p>New footer message</p>
-   );
- }
-diff --git a/src/NewComponent.tsx b/src/NewComponent.tsx
-new file mode 100644
-index 0000000..e69de29
---- /dev/null
-+++ b/src/NewComponent.tsx
-@@ -0,0 +1,10 @@
-+import React from 'react';
-+
-+export default function NewComponent() {
-+  return (
-+    <div>
-+      <h1>New Component</h1>
-+      <p>This is a brand new component added to the project.</p>
-+    </div>
-+  );
-+}
-diff --git a/src/unusedFile.tsx b/src/unusedFile.tsx
-deleted file mode 100644
-index 3b17f6d..0000000
---- a/src/unusedFile.tsx
-+++ /dev/null
-@@ -1,5 +0,0 @@
--import React from 'react';
--
--export default function UnusedFile() {
--  return <div>This file is no longer used and has been removed.</div>;
--}`,
-    timestamp: new Date()
+export function getOpenAiKey(): string {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error('OPENAI_API_KEY environment variable is not set');
   }
+  return apiKey;
+}
+
+export function getFilePathDelimiter(): string {
+  return FILE_PATH_DELIMITER;
+}
+
+export type { FilePathDelimiter };
+type FilePathDelimiter = typeof FILE_PATH_DELIMITER;
+~~server/src/DevServerManager.ts
+import { spawn, ChildProcess } from 'child_process';
+
+class DevServerManager {
+  private process: ChildProcess | null = null;
+
+  /**
+   * Starts the dev server using "pnpm dev" and keeps a reference to the process.
+   * @param targetDir The directory where the command should run.
+   * @returns A promise that resolves when the process starts successfully or rejects on error.
+   */
+  async startDevServer(targetDir: string): Promise<void> {
+    if (this.process) {
+      console.warn("Dev server is already running.");
+      return;
+    }
+
+    return new Promise((resolve, reject) => {
+      console.log(`Starting dev server in directory: ${targetDir}`);
+      this.process = spawn('pnpm', ['dev'], {
+        cwd: targetDir,
+        shell: true,
+        stdio: 'inherit',
+      });
+
+      this.process.on('spawn', () => {
+        console.log('Dev server started successfully.');
+        resolve();
+      });
+
+      this.process.on('error', (err) => {
+        console.error('Failed to start dev server:', err);
+        this.process = null;
+        reject(err);
+      });
+
+      this.process.on('close', (code) => {
+        console.log(`Dev server stopped with exit code ${code}`);
+        this.process = null;
+      });
+    });
+  }
+
+  /**
+   * Stops the running dev server if it exists.
+   * @returns A promise that resolves when the process is stopped or rejects if no process is running.
+   */
+  async stopDevServer(): Promise<void> {
+    if (!this.process) {
+      console.warn("No dev server is currently running.");
+      return Promise.reject(new Error("No dev server is currently running."));
+    }
+
+    return new Promise((resolve, reject) => {
+      console.log("Stopping dev server...");
+      this.process?.on('close', (code) => {
+        console.log(`Dev server stopped with exit code ${code}`);
+        this.process = null;
+        resolve();
+      });
+
+      try {
+        this.process?.kill('SIGINT'); // Graceful termination signal
+      } catch (err) {
+        console.error('Failed to stop dev server:', err);
+        reject(err);
+      }
+    });
+  }
+
+  /**
+   * Checks if the dev server is running.
+   * @returns True if the dev server process exists, false otherwise.
+   */
+  isDevServerRunning(): boolean {
+    return this.process !== null;
+  }
+}
+
+// Usage example
+export const devServerManager = new DevServerManager();
+
+~~server/src/GitUtils.ts
+import simpleGit, { SimpleGit } from 'simple-git';
+import { GitCommit } from '@ai-tools-gui/shared';
+
+
+/**
+ * Creates a new Git commit in the specified repository.
+ * Formats the returned GitCommit object to align with `getLastCommits`.
+ * @param commitMessage - The commit message.
+ * @param repoAbsolutePath - The absolute path to the Git repository.
+ * @returns A promise that resolves to the created GitCommit object.
+ */
+export async function createGitCommit(
+  commitMessage: string,
+  repoAbsolutePath: string
+): Promise<GitCommit> {
+  try {
+    const git: SimpleGit = simpleGit(repoAbsolutePath);
+
+    // Stage all changes
+    await git.add('./*');
+
+    // Commit changes
+    const commitResult = await git.commit(commitMessage);
+    const hash = commitResult.commit;
+
+    // Retrieve the full diff for the commit
+    const fullCommitOutput = await git.show([hash, '--patch', '--no-color']);
+    const diff = preprocessDiff(fullCommitOutput); // Format diff for react-diff-view
+
+    // Retrieve the commit timestamp
+    const timestamp = new Date(
+      (await git.show(['-s', '--format=%ct', hash])).trim() + '000'
+    );
+
+    console.debug(`Commit ${hash} created with message: "${commitMessage}"`);
+
+    return {
+      hash,
+      message: commitMessage,
+      diff,
+      timestamp,
+    };
+  } catch (error) {
+    throw new Error(
+      `Failed to create git commit in repository at "${repoAbsolutePath}". Reason: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
+  }
+}
+
+export async function revertLastCommit(
+  repoAbsolutePath: string
+): Promise<GitCommit> {
+  try {
+    const git: SimpleGit = simpleGit(repoAbsolutePath);
+
+    const currentCommitHash = (await git.revparse(['HEAD'])).trim();
+    const commitMessage = await git.show(['-s', '--format=%B', currentCommitHash]);
+    const commitDiff = await git.show([currentCommitHash]);
+    const timestamp = new Date((await git.show(['-s', '--format=%ct', currentCommitHash])).trim() + '000');
+
+    await git.reset(['--hard', 'HEAD~1']);
+
+    console.log(`Successfully reverted the most recent commit: ${currentCommitHash}`);
+    
+    return {
+      hash: currentCommitHash,
+      message: commitMessage.trim(),
+      diff: commitDiff,
+      timestamp
+    };
+  } catch (error) {
+    throw new Error(`Failed to revert the most recent commit in repository at "${repoAbsolutePath}". Reason: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+/**
+ * Fetches the last `count` commits from the target Git repository.
+ * @param repoAbsolutePath - The absolute path to the Git repository.
+ * @param count - The number of commits to retrieve.
+ * @returns A promise that resolves to an array of the last `count` commits.
+ */
+export async function getLastCommits(
+  repoAbsolutePath: string,
+  count: number
+): Promise<GitCommit[]> {
+  try {
+    const git: SimpleGit = simpleGit(repoAbsolutePath);
+
+    // Fetch the specified number of commits
+    const log = await git.log({ maxCount: count });
+
+    // Map each commit to a GitCommit object with detailed diff and timestamp
+    const commits: GitCommit[] = await Promise.all(
+      log.all.map(async (entry) => {
+        // Retrieve full diff for the commit
+        const fullCommitOutput = await git.show([entry.hash, '--patch', '--no-color']);
+        const diff = preprocessDiff(fullCommitOutput); // Format diff for react-diff-view
+        const timestamp = new Date(entry.date);
+
+        return {
+          hash: entry.hash,
+          message: entry.message,
+          diff,
+          timestamp,
+        };
+      })
+    );
+
+    console.log(`Fetched the last ${count} commits from the repository at "${repoAbsolutePath}"`);
+    return commits;
+  } catch (error) {
+    throw new Error(
+      `Failed to fetch the last ${count} commits in repository at "${repoAbsolutePath}". Reason: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
+  }
+}
+
+/**
+ * Preprocesses the git show output to format it correctly for react-diff-view.
+ * Removes commit metadata and retains only the unified diff content.
+ * @param fullCommitOutput - The raw git show output.
+ * @returns The processed diff string.
+ */
+function preprocessDiff(fullCommitOutput: string): string {
+  const lines = fullCommitOutput.split('\n');
+  const startDiffIndex = lines.findIndex((line) => line.startsWith('diff --git'));
+  return startDiffIndex >= 0 ? lines.slice(startDiffIndex).join('\n') : '';
+}
+
+~~server/src/index.ts
+import express, { NextFunction } from 'express';
+import cors from 'cors';
+import { promptProcessor } from './PromptProcessor.js';
+import { Request, Response } from 'express';
+import { 
+  ProcessPromptErrorResponse,
+  ProcessPromptResult,
+  ProcessPromptSuccessResponse
+} from 'types.js';
+import { devServerManager } from './DevServerManager.js';
+import { getLastCommits } from './GitUtils.js';
+import { getSourceFiles } from './SourceCodeHelper.js';
+
+const app = express();
+const PORT = 3001;
+
+app.use(cors());
+app.use(express.json());
+
+app.listen(PORT, () => {
+  console.log(`Server is running at http://localhost:${PORT}`);
+});
+
+const asyncHandler = (fn: Function) => (req: Request, res: Response, next: NextFunction) =>
+  Promise.resolve(fn(req, res, next)).catch(next);
+
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  console.error("Unhandled error:", err);
+  res.status(500).json({ commits: [], error: 'Internal Server Error' });
+});
+
+// app.post('/api/startApp', asyncHandler(async (req: Request, res: Response) => {
+//   const { sourceAbsolutePath } = req.body;
+//   if (!sourceAbsolutePath) {
+//     return res.status(400).json({ error: 'Missing "sourceAbsolutePath" parameter.' });
+//   }
+
+//   await devServerManager.startDevServer(sourceAbsolutePath);
+//   res.json({ success: true });
+// }));
+
+// app.post('/api/stopApp', asyncHandler(async (req: Request, res: Response) => {
+//   await devServerManager.stopDevServer();
+//   res.json({ success: true });
+// }));
+
+app.post('/api/processPrompt', asyncHandler(async (req: Request, res: Response) => {
+  console.log('/api/processPrompt -> req.body: ', JSON.stringify(req.body));
+
+  const { prompt, sourceAbsolutePath, selectedFilePaths } = req.body;
+  if (!prompt) {
+    return res.status(400).json({ commits: [], error: 'Missing "prompt" parameter.' });
+  }
+  if (!sourceAbsolutePath) {
+    return res.status(400).json({ commits: [], error: 'Missing "sourceAbsolutePath" parameter.' });
+  }
+  if (!selectedFilePaths?.length) {
+    return res.status(400).json({ commits: [], error: 'Parameter "selectedFilePaths" must be a non empty list.' });
+  }
+
+  const result: ProcessPromptResult = await promptProcessor.process(prompt, sourceAbsolutePath, selectedFilePaths);
+
+  if ('error' in result) {
+    return res.status(500).json(result as ProcessPromptErrorResponse);
+  }
+
+  return res.json(result as ProcessPromptSuccessResponse);
+}));
+
+app.get('/api/commits', asyncHandler(async (req: Request, res: Response) => {
+  const sourceAbsolutePath = req.query.sourceAbsolutePath as string;
+
+  if (!sourceAbsolutePath) {
+    return res.status(400).json({ error: 'Missing "sourceAbsolutePath" query parameter.' });
+  }
+
+  const commits = await getLastCommits(sourceAbsolutePath, 10);
+  res.json(commits);
+}));
+
+app.get('/api/sourceFiles', asyncHandler(async (req: Request, res: Response) => {
+  const sourceAbsolutePath = req.query.sourceAbsolutePath as string;
+
+  if (!sourceAbsolutePath) {
+    return res.status(400).json({ error: 'Missing "sourceAbsolutePath" query parameter.' });
+  }
+
+  const files = await getSourceFiles(sourceAbsolutePath);
+  res.json(files);
+}));
+
+~~server/src/OpenAIAPI.ts
+import OpenAI from 'openai';
+import { getOpenAiKey } from './AppConfig.js';
+import { Model } from 'types.js';
+
+const MODELS: Model[] = [
+  {
+    id: 'gpt-4o-mini',
+    inputCost: 0.150,
+    outputCost: 0.60
+  },
+  {
+    id: 'gpt-4o',
+    inputCost: 2.50,
+    outputCost: 10.00
+  },
+  {
+    id: 'o1-mini',
+    inputCost: 3.00,
+    outputCost: 12.00
+  },
+  {
+    id: 'o1',
+    inputCost: 15.00,
+    outputCost: 60.00
+  }
+] as const;
+
+class OpenAIService {
+  private readonly client: OpenAI;
+
+  constructor() {
+    const apiKey = getOpenAiKey();
+    this.client = new OpenAI({ apiKey });
+  }
+
+  async generateCode(prompt: string): Promise<string> {
+    try {
+      const chatCompletion = await this.client.chat.completions.create({
+        model: MODELS[0].id,
+        messages: [{ role: 'user' as const, content: prompt }],
+      });
+
+      const generatedResponse = chatCompletion.choices[0].message.content;
+      console.log("DEBUG returning generatedResponse:", generatedResponse);
+
+      const extractedCode = this.stripMarkdown(generatedResponse || '');
+      console.log("DEBUG: Extracted Code:", extractedCode);
+
+      return extractedCode;
+    } catch (error) {
+      console.error(
+        "Error calling OpenAI API:",
+        error instanceof Error ? error.message : String(error)
+      );
+      throw error;
+    }
+  }
+
+  private stripMarkdown(text: string): string {
+    const codeBlockRegex = /```(?:\w+)?\n([\s\S]*?)\n```/g;
+    let extractedCode = '';
+    let match: RegExpExecArray | null;
+
+    while ((match = codeBlockRegex.exec(text)) !== null) {
+      if (match[1]) {
+        extractedCode += match[1].trim() + '\n';
+      }
+    }
+
+    return extractedCode.length > 0 ? extractedCode.trim() : text;
+  }
+}
+
+const openAIService = new OpenAIService();
+export const generateCode = (prompt: string) => openAIService.generateCode(prompt);
+export type { Model };
+~~server/src/PromptProcessor.ts
+import { writeFile } from 'fs/promises';
+import { getFilePathDelimiter } from './AppConfig.js';
+import { combineFilesIntoString, applyChangesToSourceCode } from './SourceCodeHelper.js';
+import { generateCode } from './OpenAIAPI.js';
+import { executeCommand } from './ShellUtils.js';
+import { createGitCommit } from './GitUtils.js';
+import { ProcessPromptOptions, ProcessPromptResult } from 'types.js';
+import { GitCommit } from '@ai-tools-gui/shared';
+import { devServerManager } from './DevServerManager.js';
+
+// Constants
+const BUILD_COMMAND = "pnpm build" as const;
+const DEV_COMMAND = "pnpm dev" as const;
+const INSTALL_COMMAND = "pnpm install" as const;
+
+class PromptProcessor {
+  private readonly delimiter: string;
+
+  constructor() {
+    this.delimiter = getFilePathDelimiter();
+  }
+
+  async process(
+    rawPrompt: string,
+    sourceAbsolutePath: string,
+    selectedFilePaths: string[],
+    // options: ProcessPromptOptions = {}
+  ): Promise<ProcessPromptResult> {
+    const commits: GitCommit[] = [];
+    // const { maxErrorResolutionAttempts = 1 } = options;
+  
+    // console.debug("DEBUG starting to process userRawPrompt:", rawPrompt);
+  
+    try {
+      const fullPrompt = await this.generateFullPrompt(rawPrompt, sourceAbsolutePath, selectedFilePaths);
+      // console.log("DEBUG fullPrompt:\n\n", fullPrompt);
+      await writeFile('./fullPrompt.txt', fullPrompt, 'utf8');
+
+      // return { commits: [] };
+
+      const generatedCode = await generateCode(fullPrompt);
+  
+      await applyChangesToSourceCode(generatedCode, sourceAbsolutePath);
+  
+      if (this.containsPackageJsonChanges(generatedCode)) {
+        console.log("package.json updates found");
+        // await devServerManager.stopDevServer();
+        // await executeCommand(INSTALL_COMMAND, sourceAbsolutePath);
+      }
+  
+      const commitMessage = `PROMPT: ${rawPrompt}`;
+      const initialCommit = await createGitCommit(
+        commitMessage,
+        sourceAbsolutePath, 
+      );
+      commits.push(initialCommit);
+
+      // await executeCommand(BUILD_COMMAND, sourceAbsolutePath);
+      // build command didn't throw error, so start the dev server(s)
+      // await devServerManager.startDevServer(sourceAbsolutePath);
+
+      // TODO: use auto build error resolution code
+  
+      // const buildResolutionCommits = await this.handleBuildProcess(
+      //   userRawPrompt,
+      //   sourceAbsolutePath,
+      //   maxErrorResolutionAttempts
+      // );
+  
+      // commits.push(...buildResolutionCommits);
+  
+      return { commits };
+    } catch (error) {
+      console.error("Error processing prompt:", error);
+      return {
+        commits,
+        error: `Failed to process prompt: ${error instanceof Error ? error.message : String(error)}`
+      };
+    }
+  }
+
+  private async generateFullPrompt(
+    userRawPrompt: string,
+    sourceAbsolutePath: string,
+    selectedFilePaths: string[],
+  ): Promise<string> {
+    const promptInstructions = `
+Source code for my project is given below between 'SOURCE_START' and 'SOURCE_END'.
+Your specific instructions for exactly how to add, update, or delete code from my project's source code is between 'TASK_START' and 'TASK_END'.
+If the text between 'TASK_START' and 'TASK_END' contradict the instructions in this top section, then follow this top set of instructions.
+In the source code, lines starting with ${this.delimiter} are paths to files, followed by that file's content on the next line.
+Your output should only contain ${this.delimiter}put_file_path_here followed by the updated contents of that file.
+It is critially important that you include the entire file's content in your response if that file should be updated.
+Do not give other output except for that, meaning no explanation or markup.
+Existing project dependencies are provided. Reuse existing dependencies when applicable.
+Add or remove dependencies to the package.json when needed, and provide the entire file in the response with only the needed changes.
+If there is a corresponding @types package for the added package, then also include this @types package in the package.json file.
+NEVER put comments in JSON files. Do not add comments in the code. Do not remove existing comments.
+If a file should be removed entirely, include ${this.delimiter}file_path on its own line, followed by a blank line.`;
+
+    const projectContentString = await combineFilesIntoString(sourceAbsolutePath, selectedFilePaths);
+
+    return `${promptInstructions}\nTASK_START\n${userRawPrompt}\nTASK_END\nSOURCE_START\n${projectContentString}\nSOURCE_END`;
+  }
+
+  // private async handleBuildProcess(
+  //   userRawPrompt: string,
+  //   sourceAbsolutePath: string,
+  //   maxAttempts: number
+  // ): Promise<GitCommit[]> {
+  //   let attempts = 0;
+  //   const commits: GitCommit[] = [];
+
+  //   while (attempts < maxAttempts) {
+  //     try {
+  //       await executeCommand(BUILD_COMMAND, sourceAbsolutePath);
+  //       return []; // no new commits to make
+  //     } catch (error) {
+  //       attempts++;
+  //       console.error(`Build attempt ${attempts} failed:`, error);
+
+  //       if (attempts < maxAttempts) {
+  //         await this.attemptBuildErrorResolution(
+  //           error instanceof Error ? error.message : String(error),
+  //           sourceAbsolutePath
+  //         );
+          
+  //         const errorResolutionCommit = await createGitCommit(
+  //           `Attempt ${attempts} to auto resolve build error from previous commit: ${userRawPrompt}`,
+  //           sourceAbsolutePath
+  //         );
+  //         commits.push(errorResolutionCommit);
+  //       } else {
+  //         throw new Error(`Build failed after ${maxAttempts} attempts`);
+  //       }
+  //     }
+  //   }
+
+  //   return commits;
+  // }
+
+//   private async attemptBuildErrorResolution(buildCommandOutput: string, sourceAbsolutePath: string): Promise<void> {
+//     const errorResolutionPrompt = this.generateErrorResolutionPrompt(buildCommandOutput, sourceAbsolutePath);
+    
+//     console.log("DEBUG errorResolutionPrompt:", errorResolutionPrompt);
+
+//     const generatedCodeToFixBuildErrors = await generateCode(errorResolutionPrompt);
+//     await applyChangesToSourceCode(generatedCodeToFixBuildErrors, sourceAbsolutePath);
+//   }
+
+//   private generateErrorResolutionPrompt(buildCommandOutput: string, sourceAbsolutePath: string): string {
+//     const errorResolutionPromptInstructions = `
+// After running command "${BUILD_COMMAND}" I get the error between 'OUTPUT_START' and 'OUTPUT_END' below:
+// OUTPUT_START\n${buildCommandOutput}\nOUTPUT_END
+// Update my project source code to fix these errors.
+// My project source code is given below between 'SOURCE_START' and 'SOURCE_END'.
+// In the source code, lines starting with ${this.delimiter} are paths to files, followed by that file's content on the next line.
+// Your output should only contain ${this.delimiter}put_file_path_here followed by the updated contents of that file.
+// Do not give other output except for that, meaning no explanation or markup. Do not add or remove any comments in the code.`;
+
+//     const projectContentString = combineFilesIntoString(sourceAbsolutePath);
+
+//     return `${errorResolutionPromptInstructions}\nSOURCE_START\n${projectContentString}\nSOURCE_END`;
+//   }
+
+  private containsPackageJsonChanges(input: string): boolean {
+    const lines = input.split(/\r?\n/);
+    return lines.some(line => line.trim() === `${this.delimiter}package.json`);
+  }
+}
+
+export const promptProcessor = new PromptProcessor();
+export type { ProcessPromptOptions };
+~~server/src/ShellUtils.ts
+import spawn from 'cross-spawn';
+import { ChildProcess } from 'child_process';
+import { CommandResult } from 'types';
+
+export async function executeCommand(
+  command: string,
+  targetDir: string
+): Promise<CommandResult> {
+  return new Promise((resolve, reject) => {
+    const [cmd, ...args] = command.split(' ');
+
+    const child: ChildProcess = spawn(cmd, args, {
+      cwd: targetDir,
+      shell: true,
+      stdio: 'pipe'
+    });
+
+    let stdout = '';
+    let stderr = '';
+
+    if (child.stdout) {
+      child.stdout.on('data', (data: Buffer) => {
+        stdout += data.toString();
+      });
+    }
+
+    if (child.stderr) {
+      child.stderr.on('data', (data: Buffer) => {
+        stderr += data.toString();
+      });
+    }
+
+    child.on('close', (code: number | null) => {
+      if (code === 0) {
+        console.log(`Command ${command} @ ${targetDir} succeeded:\n${stdout}`);
+        resolve({ stdout, stderr });
+      } else {
+        console.error(`Command '${command}' @ ${targetDir} failed with exit code ${code}:\nSTDOUT:\n${stdout}\nSTDERR:\n${stderr}`);
+        reject(new Error(`${stdout}\n${stderr}`));
+      }
+    });
+
+    child.on('error', (error: Error) => {
+      console.error('Failed to start command:', error);
+      reject(error);
+    });
+  });
+}
+
+~~server/src/SourceCodeHelper.ts
+import fs from 'fs/promises';
+import path from 'path';
+import { getFilePathDelimiter } from './AppConfig.js';
+import ignore from 'ignore';
+
+const FILE_PROCESSING_CONCURRENCY = 10;
+
+interface FileProcessingError extends Error {
+  path?: string;
+}
+
+/**
+ * Applies code changes by updating or deleting files based on the provided input.
+ *
+ * @param generatedCodeChanges - The input string containing file delimiters and their corresponding content.
+ * @returns A promise that resolves when all operations are successful or throws an error if a problem occurs.
+ */
+export async function applyChangesToSourceCode(generatedCodeChanges: string, sourceAbsolutePath: string): Promise<void> {
+  console.log(`\n\nApplying changes to path ${sourceAbsolutePath}`);
+
+  const delimiter = getFilePathDelimiter();
+  const regex = new RegExp(`${delimiter}([^\\r\\n]+)\\r?\\n([\\s\\S]*?)(?=${delimiter}|$)`, 'g');
+  const matches = [...generatedCodeChanges.matchAll(regex)];
+
+  console.log(`Total file entries found: ${matches.length}`);
+
+  for (const [index, match] of matches.entries()) {
+    const relativeFilePath = match[1]?.trim();
+    const content = match[2]?.trim();
+
+    if (!relativeFilePath) {
+      console.warn(`Skipping invalid match at index ${index}`);
+      continue;
+    }
+
+    console.log(`Processing file (${index + 1}/${matches.length}): ${relativeFilePath}`);
+    const normalizedPath = path.normalize(relativeFilePath);
+    const fullPath = path.resolve(sourceAbsolutePath, normalizedPath);
+
+    console.log(`Resolved full path: ${fullPath}`);
+
+    if (!content) {
+      try {
+        await fs.unlink(fullPath);
+        console.log(`Deleted file: ${fullPath}`);
+      } catch (error: any) {
+        if (error.code === 'ENOENT') {
+          console.log(`File not found, skipping deletion: ${fullPath}`);
+        } else {
+          throw new Error(`Failed to delete file at ${fullPath}: ${error.message}`);
+        }
+      }
+      continue;
+    }
+
+    try {
+      const directory = path.dirname(fullPath);
+      await fs.mkdir(directory, { recursive: true });
+      await fs.writeFile(fullPath, content, 'utf8');
+      console.log(`Successfully updated file: ${fullPath}`);
+    } catch (error: any) {
+      throw new Error(`Failed to process file at ${fullPath}: ${error.message}`);
+    }
+  }
+}
+
+/**
+ * Combines content from all allowed files into a single string, separated by delimiters.
+ * 
+ * @param sourceAbsolutePath - The root directory.
+ * @returns A string containing file paths and their contents.
+ */
+export async function combineFilesIntoString(
+  sourceAbsolutePath: string,
+  fileRelativePaths: string[]
+): Promise<string> {
+  const delimiter = getFilePathDelimiter();
+  let combinedContent = '';
+
+  try {
+    // const excludedPaths = await getExcludedPaths(sourceAbsolutePath);
+    // const allowedFiles = await getAllAllowedFiles(sourceAbsolutePath, excludedPaths);
+
+    for (let i = 0; i < fileRelativePaths.length; i += FILE_PROCESSING_CONCURRENCY) {
+      const chunk = fileRelativePaths.slice(i, i + FILE_PROCESSING_CONCURRENCY);
+      const readTasks = chunk.map(async (fileRelativePath) => {
+        try {
+          const fileContents = await fs.readFile(path.join(sourceAbsolutePath, fileRelativePath), 'utf-8');
+          return `\n${delimiter}${fileRelativePath}\n${fileContents}`;
+        } catch (error) {
+          const processingError: FileProcessingError = new Error(`Error reading file: ${fileRelativePath}`);
+          processingError.path = fileRelativePath;
+          processingError.cause = error;
+          throw processingError;
+        }
+      });
+
+      const results = await Promise.all(readTasks);
+      combinedContent += results.join('');
+    }
+  } catch (error) {
+    const processingError: FileProcessingError = new Error('Error combining files into string');
+    processingError.cause = error;
+    throw processingError;
+  }
+
+  return combinedContent;
+}
+
+export async function getSourceFiles(sourceAbsolutePath: string): Promise<{ name: string; path: string; children?: any[] }[]> {
+  const excludedPaths = await getExcludedPaths(sourceAbsolutePath);
+  return await getAllAllowedFiles(sourceAbsolutePath, excludedPaths);
+}
+
+// ignore these regardless of what the .gitignore says
+const ignoredFolders = [
+  '.git',
+  'node_modules',
 ];
+
+const ignoredFiles = [
+  'LICENSE',
+  'package-lock.json',
+  'pnpm-lock.yaml',
+];
+
+/**
+ * Recursively collects all excluded paths based on a .gitignore file.
+ * @param sourceAbsolutePath - The root directory containing the .gitignore file.
+ * @returns A Set of excluded paths relative to the root directory, using forward slashes.
+ */
+async function getExcludedPaths(sourceAbsolutePath: string): Promise<Set<string>> {
+  // Read and parse the .gitignore file
+  const gitignoreContent = await fs.readFile(path.join(sourceAbsolutePath, '.gitignore'), 'utf-8');
+  const ignoreParser = ignore();
+  ignoreParser.add(gitignoreContent);
+
+  const allExcludedPaths: Set<string> = new Set();
+
+  /**
+   * Recursively scans a directory to find excluded paths.
+   * @param dir - The directory to scan.
+   * @param relativePath - The path relative to the source root.
+   */
+  async function scanDirectory(dir: string, relativePath = '') {
+    const entries = await fs.readdir(dir, { withFileTypes: true });
+
+    for (const entry of entries) {
+      const entryRelativePath = path.posix.join(relativePath, entry.name); // Use path.posix.join for forward slashes
+      const fullPath = path.join(dir, entry.name);
+
+      // Check if the relative path is ignored
+      if (
+        ignoreParser.ignores(entryRelativePath) || 
+        ignoredFolders.includes(entryRelativePath) ||
+        ignoredFiles.includes(entry.name)
+      ) {
+        allExcludedPaths.add(entryRelativePath);
+        // Skip further processing of ignored directories
+        if (entry.isDirectory()) continue;
+      }
+
+      // Recursively scan subdirectories
+      if (entry.isDirectory()) {
+        await scanDirectory(fullPath, entryRelativePath);
+      }
+    }
+  }
+
+  // Start scanning from the root directory
+  await scanDirectory(sourceAbsolutePath);
+
+  console.log("allExcludedPaths: ", allExcludedPaths);
+
+  return allExcludedPaths;
+}
+
+/**
+ * Recursively retrieves all allowed files that are not in the excludedPaths set.
+ * Returns a flat array of file objects with relative paths normalized to use forward slashes.
+ * 
+ * @param directory - The root directory to scan.
+ * @param excludedPaths - A set of paths to exclude (relative to the root directory).
+ * @param rootDir - The root directory used for calculating relative paths.
+ * @returns A promise resolving to an array of files with names and normalized paths.
+ */
+async function getAllAllowedFiles(
+  directory: string,
+  excludedPaths: Set<string>,
+  rootDir: string = directory
+): Promise<{ name: string; path: string }[]> {
+  const allowedFiles: { name: string; path: string }[] = [];
+
+  const entries = await fs.readdir(directory, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const fullPath = path.join(directory, entry.name);
+    const relativePath = path.posix.join(path.relative(rootDir, fullPath).split(path.sep).join('/'));
+
+    if (excludedPaths.has(relativePath)) {
+      // Skip excluded files and directories
+      continue;
+    }
+
+    if (entry.isFile()) {
+      // Add files to the result
+      allowedFiles.push({ name: entry.name, path: relativePath });
+    } else if (entry.isDirectory()) {
+      // Recurse into subdirectories
+      const children = await getAllAllowedFiles(fullPath, excludedPaths, rootDir);
+      allowedFiles.push(...children);
+    }
+  }
+
+  return allowedFiles;
+}
+~~server/src/types.ts
+import { GitCommit } from '@ai-tools-gui/shared';
+
+export interface CommandResult {
+  stdout: string;
+  stderr: string;
+}
+
+export interface Model {
+  id: string;
+  inputCost: number;
+  outputCost: number;
+}
+
+export interface ProcessPromptOptions {
+  maxErrorResolutionAttempts?: number;
+}
+
+export interface ProcessPromptSuccessResponse {
+  commits: GitCommit[];
+}
+
+export interface ProcessPromptErrorResponse {
+  error: string;
+  commits: GitCommit[]; // commits could be made but some problem occurs later
+}
+
+export type ProcessPromptResult = ProcessPromptSuccessResponse | ProcessPromptErrorResponse;
+
+export interface ProcessPromptBody {
+  prompt: string;
+  sourceAbsolutePath: string;
+}
+
+~~server/tsconfig.json
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "sourceMap": true,
+    "baseUrl": "./src",
+    "useDefineForClassFields": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}
 
 SOURCE_END
