@@ -64,7 +64,7 @@ function App() {
   };
 
   const handleRevertCommit = async () => {
-    const response = await fetch('http://localhost:3001/api/revertCommit', {
+    const response = await fetch('http://localhost:3001/api/revertLastCommit', {
       method: 'GET',
     });
     const success = await response.json();
