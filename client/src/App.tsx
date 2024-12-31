@@ -200,7 +200,7 @@ function App() {
               <IconButton onClick={handleGetCommits} color="primary">
                 <RefreshIcon />
               </IconButton>
-              <IconButton onClick={handleRevertCommit} color="primary">
+              <IconButton onClick={handleRevertCommit} color="warning" title="Revert most recent commit">
                 <HistoryIcon />
               </IconButton>
             </Box>
