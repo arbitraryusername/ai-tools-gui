@@ -109,8 +109,8 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({ files, onCheckedChange })
           <span style={{ fontSize: '1rem', marginRight: '4px' }}>None</span>
           <DeselectIcon />
         </IconButton>
-        <Typography variant="body1" sx={{ marginLeft: 2, paddingTop: 1 }}>
-          {`Files Selected: ${checked.length}`}
+        <Typography variant="body1" sx={{ marginLeft: 1, paddingTop: 1 }}>
+          {`Selected: ${checked.length}`}
         </Typography>
       </Box>
       <CheckboxTree
