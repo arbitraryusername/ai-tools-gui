@@ -129,6 +129,10 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({ files, onCheckedChange })
           parentOpen: <FolderOpenIcon color="primary" />,
           leaf: <FileIcon color="primary" />,
         }}
+        labels={{
+          leaf: { style: { paddingTop: '2px' } },
+          parent: { style: { paddingTop: '2px' } }
+        }}
       />
     </Box>
   );
