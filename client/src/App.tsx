@@ -12,6 +12,7 @@ import {
   Checkbox,
   FormControlLabel,
   IconButton,
+  CircularProgress,
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import HistoryIcon from '@mui/icons-material/History';
@@ -38,10 +39,12 @@ function App() {
   const [isOpen, setIsOpen] = useState<number | null>(null);
   const [showSplit, setShowSplit] = useState(true);
   const [selectedFilePaths, setSelectedFilePaths] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const viewType: ViewType = showSplit ? 'split' : 'unified';
 
   const handleSubmit = async () => {
+    setLoading(true);
     const response = await fetch('http://localhost:3001/api/processPrompt', {
       method: 'POST',
       headers: {
@@ -51,6 +54,7 @@ function App() {
     });
 
     const data = await response.json();
+    setLoading(false);
     if (data.commits) {
       await handleGetCommits();
     }
@@ -154,14 +158,18 @@ function App() {
               fullWidth
               sx={{ marginBottom: 1 }}
             />
-            <Button
-              variant="contained"
-              onClick={handleSubmit}
-              color="primary"
-              sx={{ alignSelf: 'flex-start' }}
-            >
-              Submit
-            </Button>
+            <Box display="flex" alignItems="center">
+              <Button
+                variant="contained"
+                onClick={handleSubmit}
+                color="primary"
+                sx={{ alignSelf: 'flex-start' }}
+                disabled={loading}
+              >
+                Submit
+              </Button>
+              {loading && <CircularProgress size={24} sx={{ marginLeft: 2 }} />}
+            </Box>
           </Box>
 
           {/* Right Column */}

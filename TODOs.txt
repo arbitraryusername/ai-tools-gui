@@ -10,6 +10,7 @@ CLIENT
   which will update the selected files list to be files only from those commits.
   based on these selected commits, prompt recommendations can be generated for next steps
   as well as suggestions for code improvements
+- make draggable dividers for the commits section and files section. these would be subtle ideally
 - hide everything in the UI when the repo directory full path is not populated and until Load Repo is clicked
 - could have toggle that explains the changes, but this is just nice to have at this point
 - tabs of repos along the left side, tabs of tasks for the current repo along the top
