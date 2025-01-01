@@ -1,7 +1,6 @@
 
 SERVER
 - add some code guidelines to prompt, like "ensure business rules and assumptions are not duplicated"
-- log the sent prompts and the responses to a file for debugging. should also log errors.
 - get debug breakpoints working
 
 CLIENT 
