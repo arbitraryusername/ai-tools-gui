@@ -17,12 +17,13 @@ import {
 import RefreshIcon from '@mui/icons-material/Refresh';
 import HistoryIcon from '@mui/icons-material/History';
 import type { ViewType } from 'react-diff-view';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast, ToastContainer } from 'react-toastify';
 
 import { GitCommit } from '@ai-tools-gui/shared';
 import CommitDiffViewer from './components/CommitDiffViewer';
 import DirectoryTree from './components/DirectoryTree';
+
+import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
 
 const darkTheme = createTheme({
@@ -51,11 +52,12 @@ function App() {
   const notifyError = (message: string) => {
     toast.error(message, {
       position: "top-center",
-      autoClose: 5000,
-      hideProgressBar: true,
+      autoClose: 4000,
+      hideProgressBar: false,
       closeOnClick: true,
-      draggable: true,
+      draggable: false,
       progress: undefined,
+      theme: 'dark',
     });
   };
 
@@ -69,11 +71,11 @@ function App() {
       body: JSON.stringify({ prompt, sourceAbsolutePath, selectedFilePaths }),
     });
 
+    const data = await response.json();
+
     if (!response.ok) {
-      const errorData = await response.json();
-      notifyError(errorData.message || "An error occurred.");
+      notifyError(data.error || "An error occurred.");
     } else {
-      const data = await response.json();
       if (data.commits) {
         await handleGetCommits();
       }
@@ -89,8 +91,12 @@ function App() {
       },
       body: JSON.stringify({ sourceAbsolutePath }),
     });
+
     const data = await response.json();
-    if (data.revertedCommit) {
+    
+    if (!response.ok) {
+      notifyError(data.error || "An error occurred.");
+    } else {
       await handleGetCommits();
     }
   };
@@ -101,8 +107,13 @@ function App() {
         sourceAbsolutePath
       )}`
     );
+
     const data = await response.json();
-    if (Array.isArray(data)) {
+
+    if (!response.ok) {
+      notifyError(data.error || "An error occurred.");
+      setCommits([])
+    } else if (Array.isArray(data)) {
       setCommits(
         data.map((commit: GitCommit) => ({
           hash: commit.hash,
@@ -111,8 +122,6 @@ function App() {
           timestamp: commit.timestamp,
         }))
       );
-    } else {
-      notifyError("Failed to retrieve commits.");
     }
   };
 
@@ -122,14 +131,21 @@ function App() {
         sourceAbsolutePath
       )}`
     );
-    const files = await response.json();
-    setFiles(files);
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      notifyError(data.error || "An error occurred.");
+      setFiles([]);
+    } else {
+      setFiles(data);
+    }
   };
 
   const loadRepo = async () => {
     setLoadRepoDisabled(true);
-    await handleGetCommits();
     await handleGetFiles();
+    await handleGetCommits();
     setLoadRepoDisabled(false);
   }
 
@@ -139,6 +155,7 @@ function App() {
 
   return (
     <ThemeProvider theme={darkTheme}>
+      <ToastContainer />
       <CssBaseline />
       <Box
         display="flex"
