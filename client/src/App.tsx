@@ -44,9 +44,11 @@ function App() {
 
   const viewType: ViewType = showSplit ? 'split' : 'unified';
 
-  const handleSubmit = async () => {
+  const apiBase = 'http://localhost:3001/api';
+
+  const handleSubmitPrompt = async () => {
     setLoading(true);
-    const response = await fetch('http://localhost:3001/api/processPrompt', {
+    const response = await fetch(`${apiBase}/processPrompt`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -62,7 +64,7 @@ function App() {
   };
 
   const handleRevertCommit = async () => {
-    const response = await fetch('http://localhost:3001/api/revertLastCommit', {
+    const response = await fetch(`${apiBase}/revertLastCommit`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -77,7 +79,7 @@ function App() {
 
   const handleGetCommits = async () => {
     const response = await fetch(
-      `http://localhost:3001/api/commits?sourceAbsolutePath=${encodeURIComponent(
+      `${apiBase}/commits?sourceAbsolutePath=${encodeURIComponent(
         sourceAbsolutePath
       )}`
     );
@@ -96,7 +98,7 @@ function App() {
 
   const handleGetFiles = async () => {
     const response = await fetch(
-      `http://localhost:3001/api/sourceFiles?sourceAbsolutePath=${encodeURIComponent(
+      `${apiBase}/sourceFiles?sourceAbsolutePath=${encodeURIComponent(
         sourceAbsolutePath
       )}`
     );
@@ -166,7 +168,7 @@ function App() {
             <Box display="flex" alignItems="center">
               <Button
                 variant="contained"
-                onClick={handleSubmit}
+                onClick={handleSubmitPrompt}
                 color="primary"
                 sx={{ alignSelf: 'flex-start' }}
                 disabled={loading}
