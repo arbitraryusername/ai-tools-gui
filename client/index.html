@@ -4,6 +4,25 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AI Tools GUI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+      .toast {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 16px;
+        border-radius: 8px;
+        z-index: 1000;
+        transition: opacity 0.5s ease;
+        opacity: 1;
+      }
+      .toast.fade-out {
+        opacity: 0;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>

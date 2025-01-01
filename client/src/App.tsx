@@ -17,6 +17,8 @@ import {
 import RefreshIcon from '@mui/icons-material/Refresh';
 import HistoryIcon from '@mui/icons-material/History';
 import type { ViewType } from 'react-diff-view';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import { GitCommit } from '@ai-tools-gui/shared';
 import CommitDiffViewer from './components/CommitDiffViewer';
@@ -46,6 +48,17 @@ function App() {
 
   const apiBase = 'http://localhost:3001/api';
 
+  const notifyError = (message: string) => {
+    toast.error(message, {
+      position: "top-center",
+      autoClose: 5000,
+      hideProgressBar: true,
+      closeOnClick: true,
+      draggable: true,
+      progress: undefined,
+    });
+  };
+
   const handleSubmitPrompt = async () => {
     setLoading(true);
     const response = await fetch(`${apiBase}/processPrompt`, {
@@ -56,11 +69,16 @@ function App() {
       body: JSON.stringify({ prompt, sourceAbsolutePath, selectedFilePaths }),
     });
 
-    const data = await response.json();
-    setLoading(false);
-    if (data.commits) {
-      await handleGetCommits();
+    if (!response.ok) {
+      const errorData = await response.json();
+      notifyError(errorData.message || "An error occurred.");
+    } else {
+      const data = await response.json();
+      if (data.commits) {
+        await handleGetCommits();
+      }
     }
+    setLoading(false);
   };
 
   const handleRevertCommit = async () => {
@@ -93,6 +111,8 @@ function App() {
           timestamp: commit.timestamp,
         }))
       );
+    } else {
+      notifyError("Failed to retrieve commits.");
     }
   };
 
