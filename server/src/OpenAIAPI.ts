@@ -41,10 +41,11 @@ class OpenAIService {
       });
 
       const generatedResponse = chatCompletion.choices[0].message.content;
-      console.log("DEBUG returning generatedResponse:\n\n", generatedResponse);
+      // console.log("DEBUG returning generatedResponse:\n\n", generatedResponse);
 
       const extractedCode = this.stripMarkdown(generatedResponse || '');
-      console.log("DEBUG: Extracted Code:", extractedCode);
+      // TODO: log this to a file
+      console.log("DEBUG: returning extracted Code:\n\n", extractedCode);
 
       return extractedCode;
     } catch (error) {

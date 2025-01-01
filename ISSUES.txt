@@ -2,11 +2,10 @@
   fixed, maybe
 - BUG: the code returned by openai added a @types package that didn't exist
   fixed, maybe
-- BUG: GET commits is called twice when the page loads
-  quirk of react safe mode, apparently
-- BUG: after reveting the commit successfully, the UI didn't update with the new commit
+- [resolved] BUG: GET commits is called twice when the page loads
+  fix: disable react safe mode
 - BUG: the file AppConfig has "~~" in it and this was parsed out as a new file to update, or something like that went wrong
-- ISSUE: when the package.json file is auto updated, the package is often not the latest version.
+- ISSUE: when the package.json file is auto updated, the package is often not the latest version, potentially introducing a buggy/deprecated depedency
   fix: perhaps I should try to install the latest version of that package instead of the version given?
 - NIT: The client app is sluggish/laggy when react strict mode is on
 - NIT: expanding the commit will add a big ugly scroll bar and shift the content over to the left,
