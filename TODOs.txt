@@ -1,10 +1,9 @@
 
 SERVER
 - add some code guidelines to prompt, like "ensure business rules and assumptions are not duplicated"
-- should log the sent prompts and the responses to a file for debugging. should also log errors.
+- log the sent prompts and the responses to a file for debugging. should also log errors.
 
 CLIENT 
-- show error messages in the UI, perhaps with a toast message
 - capture javascript runtime errors and automatically propose solutions
 - add ability to define a prompt context, where the user can select specific commits,
   which will update the selected files list to be files only from those commits.
