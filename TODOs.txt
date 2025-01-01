@@ -19,3 +19,5 @@ CLIENT
   much more practical to use on mobile devices! 
 - could have a refactor/improvement mode vs a new feature mode, which have different
   UI and/or different workflows.
+- on wide screens make the main layout three columns: prompt section, files tree, commits section
+- make the date section for the commits a fixed width so the messages always line up
