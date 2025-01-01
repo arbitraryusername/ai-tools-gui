@@ -41,7 +41,7 @@ class OpenAIService {
       });
 
       const generatedResponse = chatCompletion.choices[0].message.content;
-      console.log("DEBUG returning generatedResponse:", generatedResponse);
+      console.log("DEBUG returning generatedResponse:\n\n", generatedResponse);
 
       const extractedCode = this.stripMarkdown(generatedResponse || '');
       console.log("DEBUG: Extracted Code:", extractedCode);
