@@ -1,6 +1,6 @@
 import simpleGit, { SimpleGit } from 'simple-git';
 import { GitCommit } from '@ai-tools-gui/shared';
-
+import logger from './logger.js';
 
 /**
  * Creates a new Git commit in the specified repository.
@@ -32,7 +32,7 @@ export async function createGitCommit(
       (await git.show(['-s', '--format=%ct', hash])).trim() + '000'
     );
 
-    console.debug(`Commit ${hash} created with message: "${commitMessage}"`);
+    logger.info(`Commit ${hash} created with message: "${commitMessage}"`);
 
     return {
       hash,
@@ -41,11 +41,12 @@ export async function createGitCommit(
       timestamp,
     };
   } catch (error) {
-    throw new Error(
+    logger.error(
       `Failed to create git commit in repository at "${repoAbsolutePath}". Reason: ${
         error instanceof Error ? error.message : String(error)
       }`
     );
+    throw error;
   }
 }
 
@@ -63,16 +64,21 @@ export async function revertLastCommit(
     // Revert the most recent commit
     await git.revert(currentCommitHash);
 
-    console.log(`Successfully reverted the most recent commit: ${currentCommitHash}`);
+    logger.info(`Successfully reverted the most recent commit: ${currentCommitHash}`);
     
     return {
       hash: currentCommitHash,
       message: commitMessage.trim(),
       diff: commitDiff,
-      timestamp
+      timestamp,
     };
   } catch (error) {
-    throw new Error(`Failed to revert the most recent commit in repository at "${repoAbsolutePath}". Reason: ${error instanceof Error ? error.message : String(error)}`);
+    logger.error(
+      `Failed to revert the most recent commit in repository at "${repoAbsolutePath}". Reason: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
+    throw error;
   }
 }
 
@@ -109,14 +115,15 @@ export async function getLastCommits(
       })
     );
 
-    console.log(`Fetched the last ${count} commits from the repository at "${repoAbsolutePath}"`);
+    logger.debug(`Fetched the last ${count} commits from the repository at "${repoAbsolutePath}"`);
     return commits;
   } catch (error) {
-    throw new Error(
+    logger.error(
       `Failed to fetch the last ${count} commits in repository at "${repoAbsolutePath}". Reason: ${
         error instanceof Error ? error.message : String(error)
       }`
     );
+    throw error;
   }
 }
 

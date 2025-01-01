@@ -11,6 +11,7 @@ import { devServerManager } from './DevServerManager.js';
 import { getLastCommits } from './GitUtils.js';
 import { getSourceFiles } from './SourceCodeHelper.js';
 import { revertLastCommit } from './GitUtils.js';
+import logger from './logger.js';
 
 const app = express();
 const PORT = 3001;
@@ -19,15 +20,15 @@ app.use(cors());
 app.use(express.json());
 
 app.listen(PORT, () => {
-  console.log(`Server is running at http://localhost:${PORT}`);
+  logger.info(`Server is running at http://localhost:${PORT}`);
 });
 
 const asyncHandler = (fn: Function) => (req: Request, res: Response, next: NextFunction) =>
   Promise.resolve(fn(req, res, next)).catch(next);
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  console.error("Unhandled error:", err);
-  res.status(500).json({ commits: [], error: 'Internal Server Error' });
+  logger.error("Unhandled error caught:", err);
+  res.status(500).json({ error: 'Internal Server Error' });
 });
 
 // app.post('/api/startApp', asyncHandler(async (req: Request, res: Response) => {
@@ -46,8 +47,6 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 // }));
 
 app.post('/api/processPrompt', asyncHandler(async (req: Request, res: Response) => {
-  console.log('/api/processPrompt -> req.body: ', JSON.stringify(req.body));
-
   const { prompt, sourceAbsolutePath, selectedFilePaths } = req.body;
   if (!prompt) {
     return res.status(400).json({ commits: [], error: 'Prompt is empty.' });
@@ -72,7 +71,7 @@ app.get('/api/commits', asyncHandler(async (req: Request, res: Response) => {
   const sourceAbsolutePath = req.query.sourceAbsolutePath as string;
 
   if (!sourceAbsolutePath) {
-    return res.status(400).json({ error: 'Missing "sourceAbsolutePath" query parameter.' });
+    return res.status(400).json({ error: 'Repo directory is empty.' });
   }
 
   const commits = await getLastCommits(sourceAbsolutePath, 10);
@@ -83,7 +82,7 @@ app.get('/api/sourceFiles', asyncHandler(async (req: Request, res: Response) => 
   const sourceAbsolutePath = req.query.sourceAbsolutePath as string;
 
   if (!sourceAbsolutePath) {
-    return res.status(400).json({ error: 'Missing "sourceAbsolutePath" query parameter.' });
+    return res.status(400).json({ error: 'Repo directory is empty.' });
   }
 
   const files = await getSourceFiles(sourceAbsolutePath);
@@ -94,7 +93,7 @@ app.post('/api/revertLastCommit', asyncHandler(async (req: Request, res: Respons
   const sourceAbsolutePath = req.body.sourceAbsolutePath as string;
 
   if (!sourceAbsolutePath) {
-    return res.status(400).json({ error: 'Missing "sourceAbsolutePath" parameter.' });
+    return res.status(400).json({ error: 'Repo directory is empty.' });
   }
 
   try {

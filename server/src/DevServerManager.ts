@@ -1,4 +1,5 @@
 import { spawn, ChildProcess } from 'child_process';
+import logger from './logger';
 
 class DevServerManager {
   private process: ChildProcess | null = null;
@@ -10,12 +11,12 @@ class DevServerManager {
    */
   async startDevServer(targetDir: string): Promise<void> {
     if (this.process) {
-      console.warn("Dev server is already running.");
+      logger.warn("Dev server is already running.");
       return;
     }
 
     return new Promise((resolve, reject) => {
-      console.log(`Starting dev server in directory: ${targetDir}`);
+      logger.info(`Starting dev server in directory: ${targetDir}`);
       this.process = spawn('pnpm', ['dev'], {
         cwd: targetDir,
         shell: true,
@@ -23,18 +24,18 @@ class DevServerManager {
       });
 
       this.process.on('spawn', () => {
-        console.log('Dev server started successfully.');
+        logger.info('Dev server started successfully.');
         resolve();
       });
 
       this.process.on('error', (err) => {
-        console.error('Failed to start dev server:', err);
+        logger.error('Failed to start dev server:', err);
         this.process = null;
         reject(err);
       });
 
       this.process.on('close', (code) => {
-        console.log(`Dev server stopped with exit code ${code}`);
+        logger.info(`Dev server stopped with exit code ${code}`);
         this.process = null;
       });
     });
@@ -46,14 +47,14 @@ class DevServerManager {
    */
   async stopDevServer(): Promise<void> {
     if (!this.process) {
-      console.warn("No dev server is currently running.");
+      logger.warn("No dev server is currently running.");
       return Promise.reject(new Error("No dev server is currently running."));
     }
 
     return new Promise((resolve, reject) => {
-      console.log("Stopping dev server...");
+      logger.info("Stopping dev server...");
       this.process?.on('close', (code) => {
-        console.log(`Dev server stopped with exit code ${code}`);
+        logger.info(`Dev server stopped with exit code ${code}`);
         this.process = null;
         resolve();
       });
@@ -61,7 +62,7 @@ class DevServerManager {
       try {
         this.process?.kill('SIGINT'); // Graceful termination signal
       } catch (err) {
-        console.error('Failed to stop dev server:', err);
+        logger.error('Failed to stop dev server:', err);
         reject(err);
       }
     });
@@ -72,7 +73,9 @@ class DevServerManager {
    * @returns True if the dev server process exists, false otherwise.
    */
   isDevServerRunning(): boolean {
-    return this.process !== null;
+    const isRunning = this.process !== null;
+    logger.debug(`Dev server running: ${isRunning}`);
+    return isRunning;
   }
 }
 

@@ -36,11 +36,11 @@ class PromptProcessor {
   
       await applyChangesToSourceCode(generatedCode, sourceAbsolutePath);
   
-      if (this.containsPackageJsonChanges(generatedCode)) {
-        console.log("package.json updates found");
+      // if (this.containsPackageJsonChanges(generatedCode)) {
+        // console.log("package.json updates found");
         // await devServerManager.stopDevServer();
         // await executeCommand(INSTALL_COMMAND, sourceAbsolutePath);
-      }
+      // }
   
       const commitMessage = `PROMPT: ${rawPrompt}`;
       const initialCommit = await createGitCommit(

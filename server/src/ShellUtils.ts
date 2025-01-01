@@ -1,6 +1,7 @@
 import spawn from 'cross-spawn';
 import { ChildProcess } from 'child_process';
 import { CommandResult } from 'types';
+import logger from './logger';
 
 export async function executeCommand(
   command: string,
@@ -12,7 +13,7 @@ export async function executeCommand(
     const child: ChildProcess = spawn(cmd, args, {
       cwd: targetDir,
       shell: true,
-      stdio: 'pipe'
+      stdio: 'pipe',
     });
 
     let stdout = '';
@@ -20,28 +21,30 @@ export async function executeCommand(
 
     if (child.stdout) {
       child.stdout.on('data', (data: Buffer) => {
-        stdout += data.toString();
+        const output = data.toString();
+        stdout += output;
       });
     }
 
     if (child.stderr) {
       child.stderr.on('data', (data: Buffer) => {
-        stderr += data.toString();
+        const errorOutput = data.toString();
+        stderr += errorOutput;
       });
     }
 
     child.on('close', (code: number | null) => {
       if (code === 0) {
-        console.log(`Command ${command} @ ${targetDir} succeeded:\n${stdout}`);
+        logger.info(`Command "${command}" executed successfully in directory "${targetDir}"\nSTDOUT:\n${stdout}`);
         resolve({ stdout, stderr });
       } else {
-        console.error(`Command '${command}' @ ${targetDir} failed with exit code ${code}:\nSTDOUT:\n${stdout}\nSTDERR:\n${stderr}`);
-        reject(new Error(`${stdout}\n${stderr}`));
+        logger.error(`Command "${command}" failed in directory "${targetDir}" with exit code ${code}\nSTDOUT:\n${stdout}\nSTDERR:\n${stderr}`);
+        reject(new Error(`Command failed with exit code ${code}.\n${stderr}`));
       }
     });
 
     child.on('error', (error: Error) => {
-      console.error('Failed to start command:', error);
+      logger.error(`Failed to start command "${command}" in directory "${targetDir}": ${error.message}`);
       reject(error);
     });
   });
