@@ -1,6 +1,9 @@
 {
   "watch": ["src"],
   "ext": "ts",
-  "exec": "node --inspect --loader ts-node/esm src/index.ts",
-  "ignore": ["dist/*", "logs/*"]
+  "exec": "node --inspect=9229 --loader ts-node/esm src/index.ts",
+  "ignore": ["dist/*", "logs/*"],
+  "env": {
+    "NODE_ENV": "development"
+  }
 }

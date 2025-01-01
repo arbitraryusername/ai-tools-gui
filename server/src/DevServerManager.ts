@@ -1,5 +1,5 @@
 import { spawn, ChildProcess } from 'child_process';
-import logger from './logger';
+import logger from './logger.js';
 
 class DevServerManager {
   private process: ChildProcess | null = null;

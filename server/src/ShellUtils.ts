@@ -1,7 +1,7 @@
 import spawn from 'cross-spawn';
 import { ChildProcess } from 'child_process';
 import { CommandResult } from 'types';
-import logger from './logger';
+import logger from './logger.js';
 
 export async function executeCommand(
   command: string,
