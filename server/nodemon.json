@@ -2,5 +2,5 @@
   "watch": ["src"],
   "ext": "ts",
   "exec": "node --inspect --loader ts-node/esm src/index.ts",
-  "ignore": ["dist"]
+  "ignore": ["dist/*", "logs/*"]
 }

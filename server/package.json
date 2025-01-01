@@ -21,7 +21,8 @@
     "express": "^4.21.2",
     "ignore": "^7.0.0",
     "openai": "^4.76.3",
-    "simple-git": "^3.27.0"
+    "simple-git": "^3.27.0",
+    "winston": "^3.17.0"
   },
   "devDependencies": {
     "@types/gitignore-parser": "^0.0.3",
