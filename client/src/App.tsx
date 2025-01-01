@@ -151,6 +151,7 @@ function App() {
               >
                 Load Repo
               </Button>
+              {loadRepoDisabled && <CircularProgress size={24} sx={{ marginLeft: 2 }} />}
             </Box>
             <TextField
               label="Prompt"
