@@ -109,7 +109,7 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({ files, onCheckedChange })
           <span style={{ fontSize: '1rem', marginRight: '4px' }}>None</span>
           <DeselectIcon />
         </IconButton>
-        <Typography variant="body1" sx={{ marginLeft: 1, paddingTop: 1 }}>
+        <Typography variant="body1" sx={{ marginLeft: 1, paddingTop: 1, color: checked.length === 0 ? 'warning.main' : 'white' }}>
           {`Selected: ${checked.length}`}
         </Typography>
       </Box>

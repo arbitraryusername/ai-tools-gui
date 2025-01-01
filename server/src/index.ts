@@ -50,13 +50,13 @@ app.post('/api/processPrompt', asyncHandler(async (req: Request, res: Response) 
 
   const { prompt, sourceAbsolutePath, selectedFilePaths } = req.body;
   if (!prompt) {
-    return res.status(400).json({ commits: [], error: 'Missing "prompt" parameter.' });
+    return res.status(400).json({ commits: [], error: 'Prompt is empty.' });
   }
   if (!sourceAbsolutePath) {
-    return res.status(400).json({ commits: [], error: 'Missing "sourceAbsolutePath" parameter.' });
+    return res.status(400).json({ commits: [], error: 'Repo directory is empty.' });
   }
   if (!selectedFilePaths?.length) {
-    return res.status(400).json({ commits: [], error: 'Parameter "selectedFilePaths" must be a non empty list.' });
+    return res.status(400).json({ commits: [], error: 'No selected files.' });
   }
 
   const result: ProcessPromptResult = await promptProcessor.process(prompt, sourceAbsolutePath, selectedFilePaths);
