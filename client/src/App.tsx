@@ -40,6 +40,7 @@ function App() {
   const [showSplit, setShowSplit] = useState(true);
   const [selectedFilePaths, setSelectedFilePaths] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadRepoDisabled, setLoadRepoDisabled] = useState(false);
 
   const viewType: ViewType = showSplit ? 'split' : 'unified';
 
@@ -104,8 +105,10 @@ function App() {
   };
 
   const loadRepo = async () => {
+    setLoadRepoDisabled(true);
     await handleGetCommits();
     await handleGetFiles();
+    setLoadRepoDisabled(false);
   }
 
   useEffect(() => {
@@ -144,6 +147,7 @@ function App() {
                 variant="contained"
                 onClick={loadRepo}
                 color="primary"
+                disabled={loadRepoDisabled}
               >
                 Load Repo
               </Button>
