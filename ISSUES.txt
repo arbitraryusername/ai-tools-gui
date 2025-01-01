@@ -1,3 +1,9 @@
 - BUG: the code returned by openai was only the new code to add, not the entire file, so a lot of the existing code was incorrectly deleted.
+  fixed, maybe
 - BUG: the code returned by openai added a @types package that didn't exist
+  fixed, maybe
 - BUG: GET commits is called twice when the page loads
+  quirk of react safe mode, apparently
+- BUG: after reveting the commit successfully, the UI didn't update with the new commit
+- NIT: The client app is sluggish/laggy when react strict mode is on
+- NIT: expanding the commit will add a big ugly scroll bar and shift the content over to the left

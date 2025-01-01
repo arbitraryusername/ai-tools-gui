@@ -194,11 +194,11 @@ function App() {
                 }
                 label="Split View"
               />
-              <IconButton onClick={handleGetCommits} color="primary">
-                <RefreshIcon />
-              </IconButton>
               <IconButton onClick={handleRevertCommit} color="warning" title="Revert most recent commit">
                 <HistoryIcon />
+              </IconButton>
+              <IconButton onClick={handleGetCommits} color="primary">
+                <RefreshIcon />
               </IconButton>
             </Box>
           </Box>

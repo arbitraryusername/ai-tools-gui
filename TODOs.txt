@@ -1,11 +1,10 @@
 
 SERVER
 - add some code guidelines to prompt, like "ensure business rules and assumptions are not duplicated"
-- add endpoints to express server:
-  - revertLastCommit()
+
 
 CLIENT 
-- add button to undo the commit (only on most recent commit)
+- disable the submit button and show a loading indicator when the prompt is being processed
 - capture javascript runtime errors and automatically propose solutions
 - add ability to define a prompt context, where the user can select specific commits,
   which will update the selected files list to be files only from those commits.
