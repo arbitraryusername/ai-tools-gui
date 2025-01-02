@@ -22,7 +22,12 @@ export async function applyChangesToSourceCode(
 ): Promise<void> {
 
   const delimiter = getFilePathDelimiter();
-  const regex = new RegExp(`${delimiter}([^\\r\\n]+)\\r?\\n([\\s\\S]*?)(?=${delimiter}|$)`, 'g');
+
+  // find lines beginning with the delimeter. no need to escape the delimiter.
+  const regex = new RegExp(
+    `^[ \\t]*${delimiter}([^\\r\\n]+)\\r?\\n([\\s\\S]*?)(?=^[ \\t]*${delimiter}|$)`,
+    'gm'
+  );
   const matches = [...generatedCodeChanges.matchAll(regex)];
 
   logger.info(`Applying changes to path: ${sourceAbsolutePath}. Total file entries found: ${matches.length}`);

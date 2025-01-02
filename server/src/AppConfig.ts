@@ -4,8 +4,6 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const FILE_PATH_DELIMITER = "~~" as const;
-
 export function getCurrentDirectory(): string {
   const __filename = fileURLToPath(import.meta.url);
   return path.dirname(__filename);
@@ -42,8 +40,5 @@ export function getOpenAiKey(): string {
 }
 
 export function getFilePathDelimiter(): string {
-  return FILE_PATH_DELIMITER;
+  return "~~";
 }
-
-export type { FilePathDelimiter };
-type FilePathDelimiter = typeof FILE_PATH_DELIMITER;
