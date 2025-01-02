@@ -42,8 +42,8 @@ function App() {
   const [isOpen, setIsOpen] = useState<number | null>(null);
   const [showSplit, setShowSplit] = useState(true);
   const [selectedFilePaths, setSelectedFilePaths] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [loadRepoDisabled, setLoadRepoDisabled] = useState(false);
+  const [isProcessingPrompt, setIsProcessingPrompt] = useState(false);
+  const [isLoadingRepo, setIsLoadingRepo] = useState(false);
 
   const viewType: ViewType = showSplit ? 'split' : 'unified';
 
@@ -62,25 +62,28 @@ function App() {
   };
 
   const handleSubmitPrompt = async () => {
-    setLoading(true);
-    const response = await fetch(`${apiBase}/processPrompt`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ prompt, sourceAbsolutePath, selectedFilePaths }),
-    });
+    try{
+      setIsProcessingPrompt(true);
+      const response = await fetch(`${apiBase}/processPrompt`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt, sourceAbsolutePath, selectedFilePaths }),
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!response.ok) {
-      notifyError(data.error || "An error occurred.");
-    } else {
-      if (data.commits) {
-        await handleGetCommits();
+      if (!response.ok) {
+        notifyError(data.error || "An error occurred.");
+      } else {
+        if (data.commits) {
+          await handleGetCommits();
+        }
       }
+    } finally {
+      setIsProcessingPrompt(false);
     }
-    setLoading(false);
   };
 
   const handleRevertCommit = async () => {
@@ -143,10 +146,13 @@ function App() {
   };
 
   const loadRepo = async () => {
-    setLoadRepoDisabled(true);
-    await handleGetFiles();
-    await handleGetCommits();
-    setLoadRepoDisabled(false);
+    try{
+      setIsLoadingRepo(true);
+      await handleGetFiles();
+      await handleGetCommits();
+    } finally {
+      setIsLoadingRepo(false);
+    }
   }
 
   useEffect(() => {
@@ -186,11 +192,11 @@ function App() {
                 variant="contained"
                 onClick={loadRepo}
                 color="primary"
-                disabled={loadRepoDisabled}
+                disabled={isLoadingRepo}
               >
                 Load Repo
               </Button>
-              {loadRepoDisabled && <CircularProgress size={24} sx={{ marginLeft: 2 }} />}
+              {isLoadingRepo && <CircularProgress size={24} sx={{ marginLeft: 2 }} />}
             </Box>
             <TextField
               label="Prompt"
@@ -208,11 +214,11 @@ function App() {
                 onClick={handleSubmitPrompt}
                 color="primary"
                 sx={{ alignSelf: 'flex-start' }}
-                disabled={loading}
+                disabled={isProcessingPrompt}
               >
                 Submit
               </Button>
-              {loading && <CircularProgress size={24} sx={{ marginLeft: 2 }} />}
+              {isProcessingPrompt && <CircularProgress size={24} sx={{ marginLeft: 2 }} />}
             </Box>
           </Box>
 
