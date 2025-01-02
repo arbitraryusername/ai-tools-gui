@@ -62,7 +62,7 @@ const logger = createLogger({
     // Log everything to a single file
     new transports.File({
       filename: path.join(__dirname, '../logs/server.log'),
-      level: 'info',
+      level: 'debug',
     }),
     // Log to console with colorization in development mode
     new transports.Console({
