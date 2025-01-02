@@ -4,7 +4,7 @@
   fixed, maybe
 - [resolved] BUG: GET commits is called twice when the page loads
   fix: disable react safe mode
-- [resolved] BUG: when the server doesn't respond to an HTTP call, the button remains disabled and the spinner keeps going
+- BUG: when the server doesn't respond to an HTTP call, the button remains disabled and the spinner keeps going
 - [resolved] BUG: the file AppConfig has "~~" in it and this was parsed out as a new file to update, or something like that went wrong
   fix: either nest the file name inside the ~~ and update the regex, or make sure the next character isn't a quote or space
 - ISSUE: when the package.json file is auto updated, the package is often not the latest version, potentially introducing a buggy/deprecated depedency
