@@ -56,7 +56,7 @@ const customFormat = format.combine(
 );
 
 const logger = createLogger({
-  level: 'info',
+  level: 'debug',
   format: customFormat,
   transports: [
     // Log everything to a single file
