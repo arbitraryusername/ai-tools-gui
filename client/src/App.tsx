@@ -170,7 +170,7 @@ function App() {
         overflow="hidden"
       >
         {/* Top Section */}
-        <Box display="flex" flex="0 0 auto" overflow="hidden">
+        <Box display="flex" flex="0 0 40%" overflow="hidden">
           {/* Left Column */}
           <Box
             flex="1"
