@@ -224,12 +224,12 @@ function App() {
 
           {/* Right Column */}
           <Box flex="1" overflow="auto">
-            <Box display="flex" justifyContent="space-between" alignItems="left">
+            {/* <Box display="flex" justifyContent="space-between" alignItems="left">
               <Typography sx={{ paddingTop: 1, paddingLeft: 1 }}>Select files to include in Prompt</Typography>
               <IconButton onClick={handleGetFiles} color="primary">
                 <RefreshIcon />
               </IconButton>
-            </Box>
+            </Box> */}
             {
               files.length > 0 && 
               <DirectoryTree files={files} onCheckedChange={(checked) => setSelectedFilePaths(checked)} />
@@ -238,7 +238,7 @@ function App() {
         </Box>
 
         {/* Bottom Section */}
-        <Box flex="1" overflow="auto" padding={2} sx={{ marginTop: 1 }}>
+        <Box flex="1" padding={2}>
           <Box display="flex" justifyContent="space-between" alignItems="center" marginBottom={1}>
             <Typography variant="h6">Commits</Typography>
             <Box display="flex" alignItems="center">
@@ -260,51 +260,53 @@ function App() {
               </IconButton>
             </Box>
           </Box>
-          {commits.map((commit, index) => (
-            <Box key={commit.hash}>
-              <Box
-                onClick={() => setIsOpen(isOpen === index ? null : index)}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  cursor: 'pointer',
-                  marginBottom: '1rem',
-                  gap: 2,
-                }}
-              >
-                <Typography
-                  component="span"
-                  color="primary"
-                  sx={{ flexShrink: 0 }}
-                >
-                  {isOpen === index ? '▼' : '▶'}
-                </Typography>
-                <Typography
-                  component="span"
+          <Box style={{ maxHeight: "calc(60vh - 64px)", overflow: "auto"}}>
+            {commits.map((commit, index) => (
+              <Box key={commit.hash}>
+                <Box
+                  onClick={() => setIsOpen(isOpen === index ? null : index)}
                   sx={{
-                    whiteSpace: 'nowrap',
-                    flexShrink: 0,
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    cursor: 'pointer',
+                    marginBottom: '1rem',
+                    gap: 2,
                   }}
                 >
-                  {format(new Date(commit.timestamp), 'MMM d yyyy HH:mm:ss')}
-                </Typography>
-                <Typography
-                  component="strong"
-                  color="primary"
-                  sx={{
-                    flex: 1,
-                    wordBreak: 'break-word',
-                    textAlign: 'left',
-                  }}
-                >
-                  {commit.message}
-                </Typography>
+                  <Typography
+                    component="span"
+                    color="primary"
+                    sx={{ flexShrink: 0 }}
+                  >
+                    {isOpen === index ? '▼' : '▶'}
+                  </Typography>
+                  <Typography
+                    component="span"
+                    sx={{
+                      whiteSpace: 'nowrap',
+                      flexShrink: 0,
+                    }}
+                  >
+                    {format(new Date(commit.timestamp), 'MMM d yyyy HH:mm:ss')}
+                  </Typography>
+                  <Typography
+                    component="strong"
+                    color="primary"
+                    sx={{
+                      flex: 1,
+                      wordBreak: 'break-word',
+                      textAlign: 'left',
+                    }}
+                  >
+                    {commit.message}
+                  </Typography>
+                </Box>
+                <Collapse isOpened={isOpen === index}>
+                  <CommitDiffViewer diff={commit.diff} viewType={viewType} />
+                </Collapse>
               </Box>
-              <Collapse isOpened={isOpen === index}>
-                <CommitDiffViewer diff={commit.diff} viewType={viewType} />
-              </Collapse>
-            </Box>
-          ))}
+            ))}
+          </Box>
         </Box>
       </Box>
     </ThemeProvider>

@@ -140,28 +140,30 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({ files, onCheckedChange })
             color: selectedFileCount === 0 ? 'warning.main' : 'white',
           }}
         >
-          {`Selected Files: ${selectedFileCount}`}
+          {`Selected: ${selectedFileCount}`}
           &nbsp;&nbsp;&nbsp;
           {`${totalTokens > 0 ? '(' + totalTokens + ' tokens)' : ''}`}
         </Typography>
       </Box>
-      <CheckboxTree
-        nodes={treeData}
-        checked={checked}
-        expanded={expanded}
-        onCheck={handleCheck}
-        onExpand={(expandedPaths) => setExpanded(expandedPaths)}
-        icons={{
-          check: <CheckBoxIcon color="primary" />,
-          uncheck: <CheckBoxOutlineBlankIcon color="primary" />,
-          halfCheck: <IndeterminateCheckBoxIcon color="primary" />,
-          expandClose: <ChevronRightIcon color="primary" />,
-          expandOpen: <ExpandMoreIcon color="primary" />,
-          parentClose: <FolderIcon color="primary" />,
-          parentOpen: <FolderOpenIcon color="primary" />,
-          leaf: <FileIcon color="primary" />,
-        }}
-      />
+      <Box style={{ maxHeight: 'calc(40vh - 52px)', overflow: 'auto' }}>
+        <CheckboxTree
+          nodes={treeData}
+          checked={checked}
+          expanded={expanded}
+          onCheck={handleCheck}
+          onExpand={(expandedPaths) => setExpanded(expandedPaths)}
+          icons={{
+            check: <CheckBoxIcon color="primary" />,
+            uncheck: <CheckBoxOutlineBlankIcon color="primary" />,
+            halfCheck: <IndeterminateCheckBoxIcon color="primary" />,
+            expandClose: <ChevronRightIcon color="primary" />,
+            expandOpen: <ExpandMoreIcon color="primary" />,
+            parentClose: <FolderIcon color="primary" />,
+            parentOpen: <FolderOpenIcon color="primary" />,
+            leaf: <FileIcon color="primary" />,
+          }}
+        />
+      </Box>
     </Box>
   );
 };
