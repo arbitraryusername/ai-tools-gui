@@ -41,11 +41,13 @@ class OpenAIService {
 
   async generateCode(prompt: string): Promise<string> {
     try {
-      logger.info('Calling OpenAI API with prompt.');
-      const chatCompletion = await this.client.chat.completions.create({
+      logger.info('Calling OpenAI API.');
+      const payload = {
         model: MODELS[0].id,
         messages: [{ role: 'user' as const, content: prompt }],
-      });
+      }
+      logger.debug('OpenAI payload:\n', payload);
+      const chatCompletion = await this.client.chat.completions.create(payload);
 
       const generatedResponse = chatCompletion.choices[0].message.content;
       logger.debug(`OpenAI API response message:\n${chatCompletion.choices[0].message}`);
