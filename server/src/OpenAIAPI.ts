@@ -48,9 +48,9 @@ class OpenAIService {
       }
       logger.debug('OpenAI payload:\n', payload);
       const chatCompletion = await this.client.chat.completions.create(payload);
+      logger.debug('OpenAI API response received');
 
       const generatedResponse = chatCompletion.choices[0].message.content;
-      logger.debug(`OpenAI API response message:\n${chatCompletion.choices[0].message}`);
 
       const extractedCode = this.stripMarkdown(generatedResponse || '');
       logger.debug(`Code extracted from OpenAI API response:\n${extractedCode}`);

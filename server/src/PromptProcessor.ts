@@ -5,7 +5,7 @@ import { generateCode } from './OpenAIAPI.js';
 import { executeCommand } from './ShellUtils.js';
 import { createGitCommit } from './GitUtils.js';
 import { ProcessPromptOptions, ProcessPromptResult } from 'types.js';
-import { GitCommit } from '@ai-tools-gui/shared';
+import { GitCommit } from '@ai-tools-gui/shared/src/index.js';
 import { devServerManager } from './DevServerManager.js';
 
 // Constants

@@ -14,18 +14,17 @@ import {
   Deselect as DeselectIcon, 
 } from "@mui/icons-material";
 import { Box, IconButton, Typography } from "@mui/material";
-
-type FilePayload = { name: string; path: string };
+import { SourceFile } from "@ai-tools-gui/shared/src/index.js";
 
 type DirectoryTreeProps = {
-  files: FilePayload[];
+  files: SourceFile[];
   onCheckedChange: (checked: string[]) => void;
 };
 
 /**
  * Converts a flat array of file paths into a nested structure suitable for react-checkbox-tree.
  */
-const convertToCheckboxTreeData = (payload: any[]) => {
+const convertToCheckboxTreeData = (payload: SourceFile[]) => {
   const tree = {};
 
   // Helper function to build the tree structure
@@ -46,10 +45,10 @@ const convertToCheckboxTreeData = (payload: any[]) => {
   };
 
   // Build the tree from the payload
-  payload.forEach(({ path }) => {
-    const parts = path.split("/");
+  payload.forEach(({ relativePath }) => {
+    const parts = relativePath.split("/");
     const isLeaf = parts.length === 1; // Determine if it's a file or a folder
-    addNode(parts, tree, path, isLeaf);
+    addNode(parts, tree, relativePath, isLeaf);
   });
 
   // Helper function to convert the tree object to an array

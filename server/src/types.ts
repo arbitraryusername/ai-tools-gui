@@ -1,4 +1,4 @@
-import { GitCommit } from '@ai-tools-gui/shared';
+import { GitCommit } from '@ai-tools-gui/shared/src/index.js';
 
 export interface CommandResult {
   stdout: string;

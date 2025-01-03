@@ -19,7 +19,7 @@ import HistoryIcon from '@mui/icons-material/History';
 import type { ViewType } from 'react-diff-view';
 import { toast, ToastContainer } from 'react-toastify';
 
-import { GitCommit } from '@ai-tools-gui/shared';
+import { GitCommit, SourceFile } from '@ai-tools-gui/shared/src/index.js';
 import CommitDiffViewer from './components/CommitDiffViewer';
 import DirectoryTree from './components/DirectoryTree';
 
@@ -38,7 +38,7 @@ function App() {
   const [sourceAbsolutePath, setSourceAbsolutePath] = useState(defaultPath);
   const [prompt, setPrompt] = useState('');
   const [commits, setCommits] = useState<GitCommit[]>([]);
-  const [files, setFiles] = useState([]);
+  const [files, setFiles] = useState<SourceFile[]>([]);
   const [isOpen, setIsOpen] = useState<number | null>(null);
   const [showSplit, setShowSplit] = useState(true);
   const [selectedFilePaths, setSelectedFilePaths] = useState<string[]>([]);

@@ -2,6 +2,9 @@
 SERVER
 - add some code guidelines to prompt, like "ensure business rules and assumptions are not duplicated"
 - get debug breakpoints working
+- start planning for a multi tenant cloud deployed app
+  - need a database schema
+  - sql or nosql?
 
 CLIENT 
 - capture javascript runtime errors and automatically propose solutions

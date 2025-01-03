@@ -1,3 +1,4 @@
+// client/server DTOs //
 export interface GitCommit {
   hash: string;
   message: string;
@@ -5,6 +6,13 @@ export interface GitCommit {
   timestamp: Date | string;
 }
 
+export interface SourceFile {
+  name: string; // name of file with extension
+  relativePath: string; // path of file relative to repo root
+  tokenCount: number | null; // approximate number of tokens in the content of the file
+}
+
+// test data //
 export const sampleGitCommits: GitCommit[] = [
   {
     hash: 'a45f60bc837efc68e875e3f897267f31be7498ba',

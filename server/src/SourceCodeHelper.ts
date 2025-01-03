@@ -3,6 +3,7 @@ import path from 'path';
 import ignore from 'ignore';
 import { getFilePathDelimiter } from './AppConfig.js';
 import logger from './logger.js';
+import { SourceFile } from '@ai-tools-gui/shared/src/index.js'
 
 const FILE_PROCESSING_CONCURRENCY = 10;
 
@@ -113,7 +114,7 @@ export async function combineFilesIntoString(
   return combinedContent;
 }
 
-export async function getSourceFiles(sourceAbsolutePath: string): Promise<{ name: string; path: string; children?: any[] }[]> {
+export async function getSourceFiles(sourceAbsolutePath: string): Promise<SourceFile[]> {
   const excludedPaths = await getExcludedPaths(sourceAbsolutePath);
   return await getAllAllowedFiles(sourceAbsolutePath, excludedPaths);
 }
@@ -174,8 +175,8 @@ async function getAllAllowedFiles(
   directory: string,
   excludedPaths: Set<string>,
   rootDir: string = directory
-): Promise<{ name: string; path: string }[]> {
-  const allowedFiles: { name: string; path: string }[] = [];
+): Promise<SourceFile[]> {
+  const allowedFiles: SourceFile[] = [];
 
   const entries = await fs.readdir(directory, { withFileTypes: true });
 
@@ -188,7 +189,8 @@ async function getAllAllowedFiles(
     }
 
     if (entry.isFile()) {
-      allowedFiles.push({ name: entry.name, path: relativePath });
+      const tokenCount = 1; // TODO: compute this value
+      allowedFiles.push({ name: entry.name, relativePath, tokenCount });
     } else if (entry.isDirectory()) {
       const children = await getAllAllowedFiles(fullPath, excludedPaths, rootDir);
       allowedFiles.push(...children);
