@@ -4,9 +4,10 @@ import ignore from 'ignore';
 import { encoding_for_model } from 'tiktoken'; 
 import { getFilePathDelimiter } from './AppConfig.js';
 import logger from './logger.js';
-import { SourceFile } from '@ai-tools-gui/shared/src/index.js'
+import { SourceFile } from '@ai-tools-gui/shared/src/index.js';
+import pLimit from 'p-limit';
 
-const FILE_PROCESSING_CONCURRENCY = 10;
+const FILE_PROCESSING_CONCURRENCY = 12; // I have a 12 physical core machine, 24 logical cores
 
 interface FileProcessingError extends Error {
   path?: string;
@@ -25,11 +26,7 @@ export async function applyChangesToSourceCode(
 
   const delimiter = getFilePathDelimiter();
 
-  // find lines beginning with the delimeter. no need to escape the delimiter.
-  // const regex = new RegExp(
-  //   `^[ \\t]*${delimiter}([^\\r\\n]+)\\r?\\n([\\s\\S]*?)(?=^[ \\t]*${delimiter}|$)`,
-  //   'gm'
-  // );
+  // Using the original regex without line start anchors
   const regex = new RegExp(`${delimiter}([^\\r\\n]+)\\r?\\n([\\s\\S]*?)(?=${delimiter}|$)`, 'g');
   const matches = [...generatedCodeChanges.matchAll(regex)];
 
@@ -178,25 +175,43 @@ async function getAllAllowedFiles(
   rootDir: string = directory
 ): Promise<SourceFile[]> {
   const allowedFiles: SourceFile[] = [];
+  const limit = pLimit(FILE_PROCESSING_CONCURRENCY);
 
-  const entries = await fs.readdir(directory, { withFileTypes: true });
+  /**
+   * Recursive helper function to traverse directories.
+   */
+  async function traverse(dir: string, relativePath = ''): Promise<void> {
+    const entries = await fs.readdir(dir, { withFileTypes: true });
 
-  for (const entry of entries) {
-    const fullPath = path.join(directory, entry.name);
-    const relativePath = path.posix.join(path.relative(rootDir, fullPath).split(path.sep).join('/'));
+    const tasks = entries.map(async (entry) => {
+      const fullPath = path.join(dir, entry.name);
+      const entryRelativePath = path.posix.join(path.relative(rootDir, fullPath).split(path.sep).join('/'));
 
-    if (excludedPaths.has(relativePath)) {
-      continue;
-    }
+      if (excludedPaths.has(entryRelativePath)) {
+        return;
+      }
 
-    if (entry.isFile()) {
-      const tokenCount = await getTokenCount(fullPath);
-      allowedFiles.push({ name: entry.name, relativePath, tokenCount });
-    } else if (entry.isDirectory()) {
-      const children = await getAllAllowedFiles(fullPath, excludedPaths, rootDir);
-      allowedFiles.push(...children);
-    }
+      if (entry.isFile()) {
+        // Schedule the token count computation with concurrency limit
+        await limit(async () => {
+          try {
+            const tokenCount = await getTokenCount(fullPath);
+            allowedFiles.push({ name: entry.name, relativePath: entryRelativePath, tokenCount });
+          } catch {
+            logger.warn(`Skipping token computation for ${entryRelativePath}`);
+            allowedFiles.push({ name: entry.name, relativePath: entryRelativePath, tokenCount: null });
+          }
+        });
+      } else if (entry.isDirectory()) {
+        // Recursively traverse subdirectories
+        await traverse(fullPath, entryRelativePath);
+      }
+    });
+
+    await Promise.all(tasks);
   }
+
+  await traverse(directory);
 
   return allowedFiles;
 }
@@ -209,19 +224,11 @@ async function getAllAllowedFiles(
  */
 export async function getTokenCount(filePath: string): Promise<number | null> {
   try {
-    // Read the file content
     const fileContent = await fs.readFile(filePath, 'utf-8');
-
-    // Choose the appropriate model. For GPT-4, use 'gpt-4'
-    const encoding = encoding_for_model('gpt-4o-mini'); // Available models: 'gpt-4'
-
-    // Encode the content to get tokens
+    const encoding = encoding_for_model('gpt-4o-mini'); // assuming we are using gpt-4o-mini
     const tokens = encoding.encode(fileContent); // Returns an array of token IDs
+    encoding.free(); // Free up memory used by the encoding object
 
-    // Free up memory used by the encoding object
-    encoding.free();
-
-    logger.debug(`Token count for ${filePath}: ${tokens.length}`);
     return tokens.length;
   } catch (error: any) {
     logger.error(`Failed to compute token count for ${filePath}: ${error.message}`, { error });
