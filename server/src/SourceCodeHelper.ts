@@ -1,6 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import ignore from 'ignore';
+import { encoding_for_model } from 'tiktoken'; 
 import { getFilePathDelimiter } from './AppConfig.js';
 import logger from './logger.js';
 import { SourceFile } from '@ai-tools-gui/shared/src/index.js'
@@ -189,7 +190,7 @@ async function getAllAllowedFiles(
     }
 
     if (entry.isFile()) {
-      const tokenCount = 1; // TODO: compute this value
+      const tokenCount = await getTokenCount(fullPath);
       allowedFiles.push({ name: entry.name, relativePath, tokenCount });
     } else if (entry.isDirectory()) {
       const children = await getAllAllowedFiles(fullPath, excludedPaths, rootDir);
@@ -198,4 +199,32 @@ async function getAllAllowedFiles(
   }
 
   return allowedFiles;
+}
+
+/**
+ * Computes the number of tokens in a file's content using OpenAI's tokenizer.
+ * 
+ * @param filePath - The absolute path of the file.
+ * @returns The number of tokens in the file content.
+ */
+export async function getTokenCount(filePath: string): Promise<number | null> {
+  try {
+    // Read the file content
+    const fileContent = await fs.readFile(filePath, 'utf-8');
+
+    // Choose the appropriate model. For GPT-4, use 'gpt-4'
+    const encoding = encoding_for_model('gpt-4o-mini'); // Available models: 'gpt-4'
+
+    // Encode the content to get tokens
+    const tokens = encoding.encode(fileContent); // Returns an array of token IDs
+
+    // Free up memory used by the encoding object
+    encoding.free();
+
+    logger.debug(`Token count for ${filePath}: ${tokens.length}`);
+    return tokens.length;
+  } catch (error: any) {
+    logger.error(`Failed to compute token count for ${filePath}: ${error.message}`, { error });
+    return null;
+  }
 }

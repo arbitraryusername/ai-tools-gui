@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import CheckboxTree from "react-checkbox-tree";
 import "react-checkbox-tree/lib/react-checkbox-tree.css";
 import {
@@ -11,7 +11,7 @@ import {
   FolderOpen as FolderOpenIcon,
   Description as FileIcon,
   SelectAll as SelectAllIcon,
-  Deselect as DeselectIcon, 
+  Deselect as DeselectIcon,
 } from "@mui/icons-material";
 import { Box, IconButton, Typography } from "@mui/material";
 import { SourceFile } from "@ai-tools-gui/shared/src/index.js";
@@ -25,10 +25,15 @@ type DirectoryTreeProps = {
  * Converts a flat array of file paths into a nested structure suitable for react-checkbox-tree.
  */
 const convertToCheckboxTreeData = (payload: SourceFile[]) => {
-  const tree = {};
+  const tree = {} as Record<string, any>;
 
   // Helper function to build the tree structure
-  const addNode = (parts: string[], subTree: any, fullPath: string, isLeaf: boolean) => {
+  const addNode = (
+    parts: string[],
+    subTree: any,
+    fullPath: string,
+    isLeaf: boolean
+  ) => {
     const [current, ...rest] = parts;
 
     if (!subTree[current]) {
@@ -52,7 +57,7 @@ const convertToCheckboxTreeData = (payload: SourceFile[]) => {
   });
 
   // Helper function to convert the tree object to an array
-  const treeToArray = (subTree: any) => {
+  const treeToArray = (subTree: Record<string, any>) => {
     return Object.values(subTree).map((node: any): any => ({
       value: node.value,
       label: node.label,
@@ -64,8 +69,9 @@ const convertToCheckboxTreeData = (payload: SourceFile[]) => {
 };
 
 const DirectoryTree: React.FC<DirectoryTreeProps> = ({ files, onCheckedChange }) => {
-  const [checked, setChecked] = useState([] as string[]);
-  const [expanded, setExpanded] = useState([] as string[]);
+  console.log("DirectoryTree input files.length: ", files.length);
+  const [checked, setChecked] = useState<string[]>([]);
+  const [expanded, setExpanded] = useState<string[]>([]);
 
   // Convert files to the tree data format
   const treeData = convertToCheckboxTreeData(files);
@@ -81,6 +87,12 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({ files, onCheckedChange })
     }, []);
   };
 
+  // Helper to filter out directories and include only leaf nodes
+  const getLeafNodes = (paths: string[]) => {
+    const allFilePaths = files.map((file) => file.relativePath);
+    return paths.filter((path) => allFilePaths.includes(path));
+  };
+
   const handleSelectAll = () => {
     const allPaths = flattenTree(treeData);
     setChecked(allPaths);
@@ -92,10 +104,22 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({ files, onCheckedChange })
     onCheckedChange([]); // Notify parent
   };
 
-  const handleCheck = (checked: string[]) => {
-    setChecked(checked);
-    onCheckedChange(checked); // Notify parent
+  const handleCheck = (newChecked: string[]) => {
+    setChecked(newChecked);
+    onCheckedChange(newChecked); // Notify parent
   };
+
+  /**
+   * Computes the count of selected leaf nodes (files) and their total tokens.
+   */
+  const { totalTokens, selectedFileCount } = useMemo(() => {
+    const leafNodes = getLeafNodes(checked);
+    const tokenSum = leafNodes.reduce((sum, path) => {
+      const matchedFile = files.find((f) => f.relativePath === path);
+      return sum + (matchedFile?.tokenCount ?? 0);
+    }, 0);
+    return { totalTokens: tokenSum, selectedFileCount: leafNodes.length };
+  }, [checked, files]);
 
   return (
     <Box>
@@ -108,8 +132,17 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({ files, onCheckedChange })
           <span style={{ fontSize: '1rem', marginRight: '4px' }}>None</span>
           <DeselectIcon />
         </IconButton>
-        <Typography variant="body1" sx={{ marginLeft: 1, paddingTop: 1, color: checked.length === 0 ? 'warning.main' : 'white' }}>
-          {`Selected: ${checked.length}`}
+        <Typography
+          variant="body1"
+          sx={{
+            marginLeft: 1,
+            paddingTop: 1,
+            color: selectedFileCount === 0 ? 'warning.main' : 'white',
+          }}
+        >
+          {`Selected Files: ${selectedFileCount}`}
+          &nbsp;&nbsp;&nbsp;
+          {`${totalTokens > 0 ? '(' + totalTokens + ' tokens)' : ''}`}
         </Typography>
       </Box>
       <CheckboxTree
@@ -117,7 +150,7 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({ files, onCheckedChange })
         checked={checked}
         expanded={expanded}
         onCheck={handleCheck}
-        onExpand={(expanded) => setExpanded(expanded)}
+        onExpand={(expandedPaths) => setExpanded(expandedPaths)}
         icons={{
           check: <CheckBoxIcon color="primary" />,
           uncheck: <CheckBoxOutlineBlankIcon color="primary" />,
