@@ -27,33 +27,33 @@ type DirectoryTreeProps = {
 const convertToCheckboxTreeData = (payload: SourceFile[]) => {
   const tree = {} as Record<string, any>;
 
-  // Helper function to build the tree structure
+  // Helper function to build the tree structure with proper path accumulation
   const addNode = (
     parts: string[],
     subTree: any,
-    fullPath: string,
-    isLeaf: boolean
+    accumulatedPath: string
   ) => {
     const [current, ...rest] = parts;
+    const currentPath = accumulatedPath ? `${accumulatedPath}/${current}` : current;
+    const isLeaf = rest.length === 0;
 
     if (!subTree[current]) {
       subTree[current] = {
-        value: isLeaf && rest.length === 0 ? fullPath : `${fullPath}/`, // Ensure unique values for folders and files
+        value: isLeaf ? currentPath : `${currentPath}/`,
         label: current,
         children: rest.length > 0 ? {} : null,
       };
     }
 
     if (rest.length > 0) {
-      addNode(rest, subTree[current].children, fullPath, rest.length === 1);
+      addNode(rest, subTree[current].children, currentPath);
     }
   };
 
   // Build the tree from the payload
   payload.forEach(({ relativePath }) => {
     const parts = relativePath.split("/");
-    const isLeaf = parts.length === 1; // Determine if it's a file or a folder
-    addNode(parts, tree, relativePath, isLeaf);
+    addNode(parts, tree, "");
   });
 
   // Helper function to convert the tree object to an array

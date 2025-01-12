@@ -33,7 +33,8 @@ const darkTheme = createTheme({
 });
 
 function App() {
-  const defaultPath = 'C:/Users/craig/dev/ai-tools-gui';
+  // NOTE: replace with your repo path you are working in or delete this
+  const defaultPath = 'C:/Users/craig/source/repos/WeatherMapUtil/';
   
   const [sourceAbsolutePath, setSourceAbsolutePath] = useState(defaultPath);
   const [prompt, setPrompt] = useState('');
