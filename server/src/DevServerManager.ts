@@ -29,7 +29,7 @@ class DevServerManager {
       });
 
       this.process.on('error', (err) => {
-        logger.error('Failed to start dev server:', err);
+        logger.error(`Failed to start dev server: ${err}`);
         this.process = null;
         reject(err);
       });
@@ -62,7 +62,7 @@ class DevServerManager {
       try {
         this.process?.kill('SIGINT'); // Graceful termination signal
       } catch (err) {
-        logger.error('Failed to stop dev server:', err);
+        logger.error(`Failed to stop dev server: ${err}`);
         reject(err);
       }
     });

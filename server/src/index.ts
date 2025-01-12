@@ -57,7 +57,8 @@ app.post('/api/processPrompt', asyncHandler(async (req: Request, res: Response) 
   if (!selectedFilePaths?.length) {
     return res.status(400).json({ commits: [], error: 'No selected files.' });
   }
-
+  
+  logger.debug(`api/processPrompt -> selectedFilePaths: ${JSON.stringify(selectedFilePaths)}`);
   const result: ProcessPromptResult = await promptProcessor.process(prompt, sourceAbsolutePath, selectedFilePaths);
 
   if ('error' in result) {
@@ -86,6 +87,7 @@ app.get('/api/sourceFiles', asyncHandler(async (req: Request, res: Response) => 
   }
 
   const files = await getSourceFiles(sourceAbsolutePath);
+  logger.debug(`GET api/sourceFiles returning files: ${JSON.stringify(files)}`);
   res.json(files);
 }));
 

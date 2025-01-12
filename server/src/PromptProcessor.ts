@@ -87,8 +87,8 @@ Your output should only contain ${this.delimiter}put_file_path_here followed by 
 It is critially important that you include the entire file's content in your response if that file should be updated.
 Do not give other output except for that, meaning no explanation or markup.
 Existing project dependencies are provided. Reuse existing dependencies when applicable.
-Add or remove dependencies to the package.json when needed, and provide the entire file in the response with only the needed changes.
-NEVER put comments in JSON files. Do not add comments in the code. Do not remove existing comments.
+Add or remove dependencies to the when needed, and provide the entire file in the response with only the needed changes.
+Never put comments in JSON files. Do not add comments in the code. Do not remove existing comments.
 If a file should be removed entirely, include ${this.delimiter}file_path on its own line, followed by a blank line.`;
 
     const projectContentString = await combineFilesIntoString(sourceAbsolutePath, selectedFilePaths);

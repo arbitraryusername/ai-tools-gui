@@ -46,7 +46,8 @@ class OpenAIService {
         model: MODELS[0].id,
         messages: [{ role: 'user' as const, content: prompt }],
       }
-      logger.debug('OpenAI payload:\n', payload);
+      logger.debug('OpenAI payload:');
+      logger.debug(JSON.stringify(payload));
       const chatCompletion = await this.client.chat.completions.create(payload);
       logger.debug('OpenAI API response received');
 
