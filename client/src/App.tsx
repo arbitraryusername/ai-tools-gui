@@ -205,7 +205,7 @@ function App() {
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               multiline
-              rows={5}
+              rows={8}
               fullWidth
               sx={{ marginBottom: 1 }}
             />

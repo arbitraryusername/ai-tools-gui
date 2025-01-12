@@ -94,9 +94,9 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({ files, onCheckedChange })
   };
 
   const handleSelectAll = () => {
-    const allPaths = flattenTree(treeData);
-    setChecked(allPaths);
-    onCheckedChange(allPaths); // Notify parent
+    const allFilePaths = files.map((file) => file.relativePath);
+    setChecked(allFilePaths);
+    onCheckedChange(allFilePaths); // Notify parent with only file paths
   };
 
   const handleSelectNone = () => {
@@ -105,8 +105,9 @@ const DirectoryTree: React.FC<DirectoryTreeProps> = ({ files, onCheckedChange })
   };
 
   const handleCheck = (newChecked: string[]) => {
-    setChecked(newChecked);
-    onCheckedChange(newChecked); // Notify parent
+    const leafChecked = getLeafNodes(newChecked);
+    setChecked(leafChecked);
+    onCheckedChange(leafChecked); // Notify parent with only file paths
   };
 
   /**

@@ -75,7 +75,7 @@ app.get('/api/commits', asyncHandler(async (req: Request, res: Response) => {
     return res.status(400).json({ error: 'Repo directory is empty.' });
   }
 
-  const commits = await getLastCommits(sourceAbsolutePath, 10);
+  const commits = await getLastCommits(sourceAbsolutePath, 20);
   res.json(commits);
 }));
 
